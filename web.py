@@ -94,15 +94,15 @@ def run_forecast(model, image_path, device, cat_dict, col_dict, fab_dict, gtrend
     # Preprocess the input image
     image_path = uploaded_file
     image = preprocess_image(image_path, device)
+    image = image.squeeze(0)
     batch = image.unsqueeze(0)
+    
     category = torch.tensor([0], device=device)  # Placeholder category
     color = torch.tensor([0], device=device)    # Placeholder color
     textures = torch.tensor([0], device=device) # Placeholder textures
     temporal_features = torch.zeros(1, 52, device=device)
     gtrends_tensor = torch.zeros(1, 52, 3, device=device)
     
-    batch = image.unsqueeze(0)
-    batch = batch.squeeze(2)
     
     # Generate forecasts
     with torch.no_grad():
