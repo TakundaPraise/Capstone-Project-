@@ -60,16 +60,16 @@ def load_model():
 
     return model, device
     
-def preprocess_image(image, device):
+def preprocess_image(image_path, device):
     # Preprocess the input image
-    image = Image.open(image).convert('RGB')
+    image = Image.open(image_path).convert('RGB')
     image = image.resize((224, 224))
     image = np.array(image) / 255.
     image = np.transpose(image, [2, 0, 1])
     image = torch.tensor(image.copy(), device=device)
     image = (image - 0.5) / 0.5
 
-    return image.unsqueeze(0)
+    return image
 
 def cal_error_metrics(gt, forecasts):
     # Absolute errors
@@ -78,10 +78,10 @@ def cal_error_metrics(gt, forecasts):
 
     return mae, wape
 
-def run_forecast(model, image, device, cat_dict, col_dict, fab_dict, gtrends, rescale_vals):
+def run_forecast(model, image_path, device, cat_dict, col_dict, fab_dict, gtrends, rescale_vals):
     # Preprocess the input image
-    image = Image.open(image).convert('RGB')
-    image = preprocess_image(image, device)
+    image_path = uploaded_file.filename
+    image = preprocess_image(image_path, device)
     category = torch.tensor([0], device=device)  # Placeholder category
     color = torch.tensor([0], device=device)    # Placeholder color
     textures = torch.tensor([0], device=device) # Placeholder textures
@@ -96,7 +96,6 @@ def run_forecast(model, image, device, cat_dict, col_dict, fab_dict, gtrends, re
     rescaled_forecasts = forecasts * rescale_vals
 
     return rescaled_forecasts
-
 
 if __name__ == '__main__':
     # Model and data loading
