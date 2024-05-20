@@ -16,7 +16,7 @@ import pytorch_lightning as pl
 from pytorch_lightning import loggers as pl_loggers
 from pathlib import Path
 from datetime import datetime
-from uti.data_multitrends import ZeroShotDataset
+from utils.data_multitrends import ZeroShotDataset
 
 
 
