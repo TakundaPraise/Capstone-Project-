@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 from PIL import Image
-from models.gtm import gtm
+from models.gtm import GTM
 #from models.GTM import GTM
 
 from torchvision.transforms import Resize, ToTensor, Normalize, Compose
@@ -23,7 +23,7 @@ def load_model():
     col_dict = torch.load(Path('VISUELLE/color_labels.pt'))
     fab_dict = torch.load(Path('VISUELLE/fabric_labels.pt'))
 
-    model = gtm(
+    model = GTM(
         embedding_dim=32,
         hidden_dim=64,
         output_dim=12,
