@@ -8,6 +8,10 @@ from PIL import Image
 from models.GTM import GTM
 from utils.data_multitrends import ZeroShotDataset
 
+cat_dict = torch.load(Path('VISUELLE/category_labels.pt'))
+col_dict = torch.load(Path('VISUELLE/color_labels.pt'))
+fab_dict = torch.load(Path('VISUELLE/fabric_labels.pt'))
+
 def load_model():
     # Load the model
     model = GTM(
