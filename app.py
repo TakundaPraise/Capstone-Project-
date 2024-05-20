@@ -85,7 +85,7 @@ def forecast(model, cat_dict, col_dict, fab_dict, gtrends,img_path, args):
 
     # Forward pass
     with torch.no_grad():
-        y_pred, _ = model(cat_dict, col_dict, fab_dict, temporal_features, gtrends, img)
+        y_pred, _ = model( temporal_features, gtrends, img)
         #y_pred, _ = model(category, color, fabric, temporal_features, gtrends, img)
 
     return y_pred.detach().cpu().numpy().flatten()[:args.output_dim]
