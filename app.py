@@ -62,7 +62,11 @@ def load_model(args):
             autoregressive=args.autoregressive,
             gpu_num=args.gpu_num
         )
-    model.load_state_dict(torch.load(args.ckpt_path)['state_dict'], strict=False)
+
+    # Load the model weights
+    checkpoint = torch.load(args.ckpt_path, map_location=torch.device('cpu'))
+    model.load_state_dict(checkpoint['state_dict'], strict=False)
+    #model.load_state_dict(torch.load(args.ckpt_path)['state_dict'], strict=False)
     return model
 
 def forecast(model, img_path, args):
