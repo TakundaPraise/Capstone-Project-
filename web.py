@@ -34,7 +34,7 @@ def load_model():
 
     # Load the model weights
     model_path = 'log/GTM/GTM_experiment2---epoch=29---16-05-2024-08-49-43.ckpt'
-    checkpoint = torch.load(args.model_path, map_location=torch.device('cpu'))
+    checkpoint = torch.load(model_path, map_location=torch.device('cpu'))
     model.load_state_dict(checkpoint['state_dict'], strict=False)
     #model.load_state_dict(torch.load(args.ckpt_path)['state_dict'], strict=False)
     return model, device
