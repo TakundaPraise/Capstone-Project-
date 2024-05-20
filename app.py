@@ -95,6 +95,7 @@ def main():
     parser.add_argument('--log_dir', type=str, default='log')
     parser.add_argument('--seed', type=int, default=21)
     parser.add_argument('--epochs', type=int, default=30)
+    parser.add_argument('--ckpt_path', type=str, default='log/GTM/GTM_experiment2---epoch=29---16-05-2024-08-49-43.ckpt')  # Add this line
     parser.add_argument('--gpu_num', type=int, default=0)
 
     # Model specific arguments
