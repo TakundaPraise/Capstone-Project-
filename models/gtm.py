@@ -6,7 +6,7 @@ import pytorch_lightning as pl
 from transformers import pipeline
 from torchvision import models
 from fairseq.optim.adafactor import Adafactor
-from uti.data_multitrends import ZeroShotDataset
+from utils.data_multitrends import ZeroShotDataset
 import os
 
 import argparse
