@@ -80,6 +80,7 @@ def cal_error_metrics(gt, forecasts):
 
 def run_forecast(model, image, device, cat_dict, col_dict, fab_dict, gtrends, rescale_vals):
     # Preprocess the input image
+    image = Image.open(image).convert('RGB')
     image = preprocess_image(image, device)
     category = torch.tensor([0], device=device)  # Placeholder category
     color = torch.tensor([0], device=device)    # Placeholder color
@@ -95,6 +96,7 @@ def run_forecast(model, image, device, cat_dict, col_dict, fab_dict, gtrends, re
     rescaled_forecasts = forecasts * rescale_vals
 
     return rescaled_forecasts
+
 
 if __name__ == '__main__':
     # Model and data loading
