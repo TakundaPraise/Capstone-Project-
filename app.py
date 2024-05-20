@@ -2,7 +2,7 @@ def main():
     st.title("Zero-Shot Sales Forecasting")
 
     # Load model and configuration
-    parser = argparse.ArgumentParser(description='New Fashion Product sales forecasting')
+    parser = argparse.ArgumentParser(description='Zero-Shot sales forecasting')
 
     # General arguments
     parser.add_argument('--data_folder', type=str, default='VISUELLE/')
