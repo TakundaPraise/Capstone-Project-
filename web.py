@@ -1,110 +1,106 @@
 import streamlit as st
 import torch
-import numpy as np
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
-from utils.data_multitrends import ZeroShotDataset
+from PIL import Image
 from models.GTM import GTM
+from utils.data_multitrends import ZeroShotDataset
 
-def load_model(args):
+def load_model(model_path):
     # Set up CUDA
-    device = torch.device(f'cuda:{args.gpu_num}' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    # Load category and color encodings
-    cat_dict = torch.load(Path(args.data_folder + 'category_labels.pt'))
-    col_dict = torch.load(Path(args.data_folder + 'color_labels.pt'))
-    fab_dict = torch.load(Path(args.data_folder + 'fabric_labels.pt'))
-
-    # Load Google trends
-    gtrends = pd.read_csv(Path(args.data_folder + 'gtrends.csv'), index_col=[0], parse_dates=True)
-
-    # Create model
+    # Load the model
     model = GTM(
-        embedding_dim=args.embedding_dim,
-        hidden_dim=args.hidden_dim,
-        output_dim=args.output_dim,
-        num_heads=args.num_attn_heads,
-        num_layers=args.num_hidden_layers,
-        cat_dict=cat_dict,
-        col_dict=col_dict,
-        fab_dict=fab_dict,
-        use_text=args.use_text,
-        use_img=args.use_img,
-        trend_len=args.trend_len,
-        num_trends=args.num_trends,
-        use_encoder_mask=args.use_encoder_mask,
-        autoregressive=args.autoregressive,
-        gpu_num=args.gpu_num
+        embedding_dim=32,
+        hidden_dim=64,
+        output_dim=12,
+        num_heads=4,
+        num_layers=1,
+        use_text=1,
+        use_img=1,
+        trend_len=52,
+        num_trends=3,
+        use_encoder_mask=1,
+        autoregressive=0,
+        gpu_num=0
     )
-
-    model.load_state_dict(torch.load(args.ckpt_path)['state_dict'], strict=False)
+    model.load_state_dict(torch.load(model_path, map_location=device)['state_dict'], strict=False)
     model.to(device)
     model.eval()
 
-    return model, device, cat_dict, col_dict, fab_dict, gtrends
+    return model, device
+
+def preprocess_image(image, device):
+    # Preprocess the input image
+    image = Image.open(image).convert('RGB')
+    image = image.resize((224, 224))
+    image = np.array(image) / 255.
+    image = np.transpose(image, [2, 0, 1])
+    image = torch.tensor(image.copy(), device=device)
+    image = (image - 0.5) / 0.5
+
+    return image.unsqueeze(0)
 
 def cal_error_metrics(gt, forecasts):
+    # Absolute errors
     mae = np.mean(np.abs(gt - forecasts))
-    wape = 100 * np.sum(np.abs(gt - forecasts)) / np.sum(gt)
-    return round(mae, 3), round(wape, 3)
+    wape = 100 * np.sum(np.sum(np.abs(gt - forecasts), axis=-1)) / np.sum(gt)
 
-def main():
+    return mae, wape
+
+def run_forecast(model, image, device, cat_dict, col_dict, fab_dict, gtrends, rescale_vals):
+    # Preprocess the input image
+    image = preprocess_image(image, device)
+    category = torch.tensor([0], device=device)  # Placeholder category
+    color = torch.tensor([0], device=device)    # Placeholder color
+    textures = torch.tensor([0], device=device) # Placeholder textures
+    temporal_features = torch.zeros(1, 52, device=device)
+    gtrends_tensor = torch.zeros(1, 52, 3, device=device)
+
+    # Generate forecasts
+    with torch.no_grad():
+        y_pred, _ = model(category, color, textures, temporal_features, gtrends_tensor, image)
+
+    forecasts = y_pred.detach().cpu().numpy().flatten()[:12]
+    rescaled_forecasts = forecasts * rescale_vals
+
+    return rescaled_forecasts
+
+if __name__ == '__main__':
     # Model and data loading
-    args = {
-        'data_folder': 'VISUELLE/',
-        'ckpt_path': 'log/GTM/GTM_experiment2---epoch=29---16-05-2024-08-49-43.ckpt',
-        'gpu_num': 0,
-        'embedding_dim': 32,
-        'hidden_dim': 64,
-        'output_dim': 12,
-        'num_attn_heads': 4,
-        'num_hidden_layers': 1,
-        'use_text': 1,
-        'use_img': 1,
-        'trend_len': 52,
-        'num_trends': 3,
-        'use_encoder_mask': 1,
-        'autoregressive': 0
-    }
+    model_path = 'log/GTM/GTM_experiment2---epoch=29---16-05-2024-08-49-43.ckpt'
+    model, device = load_model(model_path)
 
-    model, device, cat_dict, col_dict, fab_dict, gtrends = load_model(args)
+    # Load category and color encodings
+    cat_dict = torch.load(Path('VISUELLE/category_labels.pt'))
+    col_dict = torch.load(Path('VISUELLE/color_labels.pt'))
+    fab_dict = torch.load(Path('VISUELLE/fabric_labels.pt'))
+
+    # Load Google trends
+    gtrends = pd.read_csv(Path('VISUELLE/gtrends.csv'), index_col=[0], parse_dates=True)
+
+    # Load normalization scale
+    rescale_vals = np.load(Path('VISUELLE/normalization_scale.npy'))
 
     # Streamlit app
     st.title('Zero-shot Sales Forecasting')
     uploaded_file = st.file_uploader('Upload an image', type=['jpg', 'jpeg', 'png'])
 
     if uploaded_file is not None:
-        image = ZeroShotDataset.preprocess_image(uploaded_file)
-        category = torch.tensor([0], device=device)  # Placeholder category
-        color = torch.tensor([0], device=device)    # Placeholder color
-        textures = torch.tensor([0], device=device) # Placeholder textures
-        temporal_features = torch.zeros(1, args.trend_len, device=device)
-        gtrends_tensor = torch.zeros(1, args.trend_len, args.num_trends, device=device)
+        # Generate forecasts
+        image = Image.open(uploaded_file)
+        rescaled_forecasts = run_forecast(model, image, device, cat_dict, col_dict, fab_dict, gtrends, rescale_vals)
 
-        with torch.no_grad():
-            y_pred, _ = model(category, color, textures, temporal_features, gtrends_tensor, image)
-
-        forecasts = y_pred.detach().cpu().numpy().flatten()[:args.output_dim]
-        rescale_vals = np.load(args.data_folder + 'normalization_scale.npy')
-        rescaled_forecasts = forecasts * rescale_vals
-
+        # Display the rescaled forecasts
         st.subheader('Forecasts')
-        forecast_df = pd.DataFrame(rescaled_forecasts, columns=[f'Month {i+1}' for i in range(args.output_dim)])
+        forecast_df = pd.DataFrame(rescaled_forecasts.reshape(1, 12), columns=[f'Month {i+1}' for i in range(12)])
         st.table(forecast_df)
 
         st.subheader('Forecast Visualization')
         fig, ax = plt.subplots(figsize=(12, 6))
         ax.plot(forecast_df.columns, rescaled_forecasts)
         ax.set_xlabel('Month')
-        ax.set_ylabel('Sales')
-        ax.set_title('Sales Forecasts')
-        st.pyplot(fig)
-
-        st.subheader('Performance Metrics')
-        mae, wape = cal_error_metrics(rescaled_forecasts, rescaled_forecasts)
-        st.write(f'MAE: {mae}')
-        st.write(f'WAPE: {wape}%')
-
-if __name__ == '__main__':
-    main()
+        ax.set_ylabel
