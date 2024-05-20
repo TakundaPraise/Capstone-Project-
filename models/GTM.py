@@ -6,19 +6,17 @@ import pytorch_lightning as pl
 from transformers import pipeline
 from torchvision import models
 from fairseq.optim.adafactor import Adafactor
-from uti.data_multitrends import ZeroShotDataset
-import os
 
-import argparse
-import torch
-import pandas as pd
-import pytorch_lightning as pl
-from pytorch_lightning import loggers as pl_loggers
-from pathlib import Path
-from datetime import datetime
-from uti.data_multitrends import ZeroShotDataset
+from dataclasses import dataclass, field
+from fairseq.dataclass.configs import CommonConfig
 
+def create_common_config():
+    return CommonConfig()
 
+@dataclass
+class MyDataclass:
+    common: CommonConfig = field(default_factory=create_common_config)
+    # Other fields...
 
 
 class PositionalEncoding(nn.Module):
@@ -116,15 +114,11 @@ class GTrendEmbedder(nn.Module):
         split = math.gcd(size, forecast_horizon)
         for i in range(0, size, split):
             mask[i:i+split, i:i+split] = 1
-        #mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0)).to('cpu')
-        #return mask
         mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0)).to('cuda:'+str(self.gpu_num))
         return mask
     
     def _generate_square_subsequent_mask(self, size):
         mask = (torch.triu(torch.ones(size, size)) == 1).transpose(0, 1)
-        #mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0)).to('cpu')
-        #return mask
         mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0)).to('cuda:'+str(self.gpu_num))
         return mask
 
@@ -162,8 +156,7 @@ class TextEmbedder(nn.Module):
         # BERT gives us embeddings for [CLS] ..  [EOS], which is why we only average the embeddings in the range [1:-1] 
         # We're not fine tuning BERT and we don't want the noise coming from [CLS] or [EOS]
         word_embeddings = [torch.FloatTensor(x[0][1:-1]).mean(axis=0) for x in word_embeddings] 
-        word_embeddings = torch.stack(word_embeddings)
-        #word_embeddings = torch.stack(word_embeddings).to('cuda:'+str(self.gpu_num))
+        word_embeddings = torch.stack(word_embeddings).to('cuda:'+str(self.gpu_num))
         
         # Embed to our embedding space
         word_embeddings = self.dropout(self.fc(word_embeddings))
@@ -219,7 +212,7 @@ class TransformerDecoderLayer(nn.Module):
     def __init__(self, d_model, nhead, dim_feedforward=2048, dropout=0.1, activation="relu"):
         super(TransformerDecoderLayer, self).__init__()
         
-        self.multihead_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout)
+        self.self_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout)
 
         # Implementation of Feedforward model
         self.linear1 = nn.Linear(d_model, dim_feedforward)
@@ -239,9 +232,9 @@ class TransformerDecoderLayer(nn.Module):
         super(TransformerDecoderLayer, self).__setstate__(state)
 
     def forward(self, tgt, memory, tgt_mask = None, memory_mask = None, tgt_key_padding_mask = None, 
-            memory_key_padding_mask = None):
+            memory_key_padding_mask = None, tgt_is_causal = None, memory_causal= None):
 
-        tgt2, attn_weights = self.multihead_attn(tgt, memory, memory)
+        tgt2, attn_weights = self.self_attn(tgt, memory, memory)
         tgt = tgt + self.dropout2(tgt2)
         tgt = self.norm2(tgt)
         tgt2 = self.linear2(self.dropout(self.activation(self.linear1(tgt))))
@@ -330,24 +323,16 @@ class GTM(pl.LightningModule):
     def validation_step(self, test_batch, batch_idx):
         item_sales, category, color, fabric, temporal_features, gtrends, images = test_batch 
         forecasted_sales, _ = self.forward(category, color, fabric, temporal_features, gtrends, images)
-
-        val_step_outputs = item_sales.squeeze(), forecasted_sales.squeeze()
-        return val_step_outputs
-        #return item_sales.squeeze(), forecasted_sales.squeeze()
         
-        #return {'item': item_sales.squeeze(), 'forecasted': forecasted_sales.squeeze()}
-        #val_step_outputs = {'item': item_sales.squeeze(), 'forecasted': forecasted_sales.squeeze()}
-        #val_step_outputs = [(item_sales.squeeze(), forecasted_sales.squeeze())]
-        #return val_step_outputs
-
-    
-    def validation_epoch_end(self, val_step_outputs):
-        item_sales, forecasted_sales = [x[0] for x in val_step_outputs], [x[1] for x in val_step_outputs]
-        print(len(item_sales), len(forecasted_sales))
-        item_sales, forecasted_sales = torch.stack(item_sales), torch.stack(forecasted_sales)
-        rescaled_item_sales, rescaled_forecasted_sales = item_sales * 100, forecasted_sales * 100  # 1065 is the normalization factor (max of the sales of the training set)
+        item_sales, forecasted_sales = item_sales.squeeze(), forecasted_sales.squeeze()
+        
+        rescaled_item_sales, rescaled_forecasted_sales = item_sales*1065, forecasted_sales*1065 # 1065 is the normalization factor (max of the sales of the training set)
         loss = F.mse_loss(item_sales, forecasted_sales.squeeze())
         mae = F.l1_loss(rescaled_item_sales, rescaled_forecasted_sales)
         self.log('val_mae', mae)
         self.log('val_loss', loss)
+
         print('Validation MAE:', mae.detach().cpu().numpy(), 'LR:', self.optimizers().param_groups[0]['lr'])
+        
+
+    
