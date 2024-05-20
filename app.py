@@ -10,7 +10,7 @@ def main():
     parser.add_argument('--seed', type=int, default=21)
     parser.add_argument('--epochs', type=int, default=30)
     parser.add_argument('--gpu_num', type=int, default=0)
-    parser.add_argument('--ckpt_path', type=str, default=('log/GTM\GTM_experiment2---epoch=29---16-05-2024-08-49-43.ckpt')
+    parser.add_argument('--ckpt_path', type=str, default='log/GTM\GTM_experiment2---epoch=29---16-05-2024-08-49-43.ckpt')
     # Model specific arguments
     parser.add_argument('--model_type', type=str, default='GTM', help='Choose between GTM or FCN')
     parser.add_argument('--use_trends', type=int, default=1)
