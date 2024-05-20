@@ -62,13 +62,19 @@ def load_model():
     
 
 def preprocess_image(image_path, device):
-    # Preprocess the input image
+    # Open the image
     image = Image.open(image_path).convert('RGB')
-    image = image.resize((224, 224))
-    image = np.array(image) / 255.
-    image = np.transpose(image, [2, 0, 1])
-    image = torch.tensor(image.copy(), dtype=torch.float64, device=device)
-    image = (image - 0.5) / 0.5
+
+    # Resize and normalize the image
+    img_transforms = Compose([
+        Resize((40, 40)),
+        ToTensor(),
+        Normalize(mean=[0.012, 0.010, 0.008], std=[0.029, 0.024, 0.025])
+    ])
+    image = img_transforms(image)
+
+    # Add a batch dimension
+    image = image.unsqueeze(0).to(device)
 
     return image
 
