@@ -70,7 +70,7 @@ def load_model(args):
     return model, cat_dict, col_dict, gtrends, fab_dict
     #return model
 
-def forecast(model, img_path, args):
+def forecast(model, model, cat_dict, col_dict, fab_dict, gtrends,img_path, args):
     # Load and preprocess the image
     img_transforms = Compose([Resize((10, 10)), ToTensor(), Normalize(mean=[0.012, 0.010, 0.008], std=[0.029, 0.024, 0.025])])
     img = Image.open(img_path).convert('RGB')
