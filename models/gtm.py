@@ -81,7 +81,10 @@ class FusionNetwork(nn.Module):
             nn.Linear(input_dim, hidden_dim)
         )
 
+    
+
     def forward(self, img_encoding, text_encoding, dummy_encoding):
+    
         # Fuse static features together
         pooled_img = self.img_pool(img_encoding)
         condensed_img = self.img_linear(pooled_img.flatten(1))
@@ -286,26 +289,26 @@ class GTM(pl.LightningModule):
         return mask
 
     class GTM(pl.LightningModule):
-    def forward(self, images, category=None, color=None, textures=None, temporal_features=None, gtrends_tensor=None, batch_size=1):
-        # Encode features and get inputs
-        img_encoding = self.image_encoder(images.to(self.device))
-        dummy_encoding = self.dummy_encoder(temporal_features.to(self.device))
-        text_encoding = self.text_encoder(category.to(self.device), color.to(self.device), textures.to(self.device))
-        gtrend_encoding = self.gtrend_encoder(gtrends_tensor.to(self.device))
-
-        # Add a new dimension to dummy_encoding to make it compatible with the expected shape of the input tensor
-        dummy_encoding = dummy_encoding.unsqueeze(1).expand(-1, self.hidden_dim, -1)
-
-        # Concatenate all the input tensors along the sequence_length dimension
-        x = torch.cat([img_encoding, dummy_encoding, text_encoding, gtrend_encoding], dim=1)
-
-        # Pass the inputs through the transformer
-        x = self.transformer(x)
-
-        # Decode the output
-        y_pred = self.decoder(x[:, :self.embedding_dim])
-
-        return y_pred
+        def forward(self, images, category=None, color=None, textures=None, temporal_features=None, gtrends_tensor=None, batch_size=1):
+            # Encode features and get inputs
+            img_encoding = self.image_encoder(images.to(self.device))
+            dummy_encoding = self.dummy_encoder(temporal_features.to(self.device))
+            text_encoding = self.text_encoder(category.to(self.device), color.to(self.device), textures.to(self.device))
+            gtrend_encoding = self.gtrend_encoder(gtrends_tensor.to(self.device))
+    
+            # Add a new dimension to dummy_encoding to make it compatible with the expected shape of the input tensor
+            dummy_encoding = dummy_encoding.unsqueeze(1).expand(-1, self.hidden_dim, -1)
+    
+            # Concatenate all the input tensors along the sequence_length dimension
+            x = torch.cat([img_encoding, dummy_encoding, text_encoding, gtrend_encoding], dim=1)
+    
+            # Pass the inputs through the transformer
+            x = self.transformer(x)
+    
+            # Decode the output
+            y_pred = self.decoder(x[:, :self.embedding_dim])
+    
+            return y_pred
 
     def configure_optimizers(self):
         optimizer = Adafactor(self.parameters(),scale_parameter=True, relative_step=True, warmup_init=True, lr=None)
