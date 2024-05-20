@@ -1,0 +1,7 @@
+log/GTM/GTM_experiment2---epoch=29---16-05-2024-08-49-43.ckpt filter=lfs diff=lfs merge=lfs -text
+# Use Git LFS for model checkpoints
+*.ckpt filter=lfs diff=lfs merge=lfs -text
+*.pth filter=lfs diff=lfs merge=lfs -text
+log/GTM/GTM_experiment2---epoch=29---16-05-2024-08-49-43.ckpt filter=lfs diff=lfs merge=lfs -text
+log/GTM/GTM_experiment2---epoch=29---16-05-2024-08-49-43.ckpt filter=lfs diff=lfs merge=lfs -text
+log/GTM/GTM_experiment2---epoch=29---16-05-2024-08-49-43.ckpt filter=lfs diff=lfs merge=lfs -text
