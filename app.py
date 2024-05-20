@@ -131,7 +131,7 @@ def main():
         with open(img_path, "wb") as f:
             f.write(uploaded_file.getbuffer())
 
-        forecasts = forecast(model, cat_dict, col_dict, gtrends, fab_dict, img_path, args)
+        forecasts = forecast(model, img_path, args)
         rescale_vals = np.load(os.path.join(args.data_folder, 'normalization_scale.npy'))
         rescaled_forecasts = forecasts * rescale_vals
 
