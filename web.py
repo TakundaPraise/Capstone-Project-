@@ -9,6 +9,8 @@ from models.GTM import GTM
 from utils.data_multitrends import ZeroShotDataset
 
 def load_model():
+    # Initialize the device variable
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # Load the model
     cat_dict = torch.load(Path('VISUELLE/category_labels.pt'))
     col_dict = torch.load(Path('VISUELLE/color_labels.pt'))
