@@ -8,10 +8,7 @@ from PIL import Image
 from models.GTM import GTM
 from utils.data_multitrends import ZeroShotDataset
 
-def load_model(model_path):
-    # Set up CUDA
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
+def load_model():
     # Load the model
     model = GTM(
         embedding_dim=32,
@@ -27,10 +24,13 @@ def load_model(model_path):
         autoregressive=0,
         gpu_num=0
     )
-    model.load_state_dict(torch.load(model_path, map_location=device)['state_dict'], strict=False)
-    model.to(device)
+    model_path = 'log/GTM/GTM_experiment2---epoch=29---16-05-2024-08-49-43.ckpt'
+    print(f"Loading model from {model_path}")
+    model.load_state_dict(torch.load(model_path, map_location=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
+    print("Model loaded successfully")
     model.eval()
 
+    return model
     return model, device
 
 def preprocess_image(image, device):
