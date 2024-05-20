@@ -8,6 +8,8 @@ from PIL import Image
 from models.GTM import GTM
 from torchvision.transforms import Resize, ToTensor, Normalize, Compose
 from sklearn.preprocessing import MinMaxScaler
+from PIL import Image, ImageFile
+
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 from utils.data_multitrends import ZeroShotDataset
 
