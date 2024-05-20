@@ -82,6 +82,7 @@ def run_forecast(model, image_path, device, cat_dict, col_dict, fab_dict, gtrend
     # Preprocess the input image
     image_path = uploaded_file
     image = preprocess_image(image_path, device)
+    batch = image.unsqueeze(0)
     category = torch.tensor([0], device=device)  # Placeholder category
     color = torch.tensor([0], device=device)    # Placeholder color
     textures = torch.tensor([0], device=device) # Placeholder textures
@@ -90,12 +91,17 @@ def run_forecast(model, image_path, device, cat_dict, col_dict, fab_dict, gtrend
 
     # Generate forecasts
     with torch.no_grad():
-        y_pred, _ = model(category, color, textures, temporal_features, gtrends_tensor, image)
-
+        #y_pred, _ = model(category, color, textures, temporal_features, gtrends_tensor, image)
+        y_pred, _ = model(category, color, textures, temporal_features, gtrends_tensor, batch)
     forecasts = y_pred.detach().cpu().numpy().flatten()[:12]
     rescaled_forecasts = forecasts * rescale_vals
 
     return rescaled_forecasts
+
+
+   
+    
+
 
 if __name__ == '__main__':
     # Model and data loading
