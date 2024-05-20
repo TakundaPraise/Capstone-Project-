@@ -289,26 +289,33 @@ class GTM(pl.LightningModule):
         return mask
 
     class GTM(pl.LightningModule):
-        def forward(self, images, category=None, color=None, textures=None, temporal_features=None, gtrends_tensor=None, batch_size=1):
-            # Encode features and get inputs
-            img_encoding = self.image_encoder(images.to(self.device))
-            dummy_encoding = self.dummy_encoder(temporal_features.to(self.device))
-            text_encoding = self.text_encoder(category.to(self.device), color.to(self.device), textures.to(self.device))
-            gtrend_encoding = self.gtrend_encoder(gtrends_tensor.to(self.device))
-    
-            # Add a new dimension to dummy_encoding to make it compatible with the expected shape of the input tensor
-            dummy_encoding = dummy_encoding.unsqueeze(1).expand(-1, self.hidden_dim, -1)
-    
-            # Concatenate all the input tensors along the sequence_length dimension
-            x = torch.cat([img_encoding, dummy_encoding, text_encoding, gtrend_encoding], dim=1)
-    
-            # Pass the inputs through the transformer
-            x = self.transformer(x)
-    
-            # Decode the output
-            y_pred = self.decoder(x[:, :self.embedding_dim])
-    
-            return y_pred
+        def forward(self, category, color, fabric, temporal_features, gtrends, images):
+        # Encode features and get inputs
+        img_encoding = self.image_encoder(images)
+        dummy_encoding = self.dummy_encoder(temporal_features)
+        text_encoding = self.text_encoder(category, color, fabric)
+        gtrend_encoding = self.gtrend_encoder(gtrends)
+
+        # Fuse static features together
+        static_feature_fusion = self.static_feature_encoder(img_encoding, text_encoding, dummy_encoding)
+
+        if self.autoregressive == 1:
+            # Decode
+            tgt = torch.zeros(self.output_len, gtrend_encoding.shape[1], gtrend_encoding.shape[-1]).to('cuda:'+str(self.gpu_num))
+            tgt[0] = static_feature_fusion
+            tgt = self.pos_encoder(tgt)
+            tgt_mask = self._generate_square_subsequent_mask(self.output_len)
+            memory = gtrend_encoding
+            decoder_out, attn_weights = self.decoder(tgt, memory, tgt_mask)
+            forecast = self.decoder_fc(decoder_out)
+        else:
+            # Decode (generatively/non-autoregressively)
+            tgt = static_feature_fusion.unsqueeze(0)
+            memory = gtrend_encoding
+            decoder_out, attn_weights = self.decoder(tgt, memory)
+            forecast = self.decoder_fc(decoder_out)
+
+        return forecast.view(-1, self.output_len), attn_weights
 
     def configure_optimizers(self):
         optimizer = Adafactor(self.parameters(),scale_parameter=True, relative_step=True, warmup_init=True, lr=None)
