@@ -77,15 +77,16 @@ def forecast(model, img_path, args):
     img = img_transforms(img).unsqueeze(0)
 
     # Get the product information
-    category = cat_dict
-    color = col_dict
-    fabric = fab_dict
+    #category = cat_dict
+    #color = col_dict
+    #fabric = fab_dict
     temporal_features = torch.zeros(1, 4)
     gtrends = torch.zeros(1, args.num_trends, args.trend_len)
 
     # Forward pass
     with torch.no_grad():
-        y_pred, _ = model(category, color, fabric, temporal_features, gtrends, img)
+        y_pred, _ = model(cat_dict, col_dict, fab_dict, temporal_features, gtrends, img)
+        #y_pred, _ = model(category, color, fabric, temporal_features, gtrends, img)
 
     return y_pred.detach().cpu().numpy().flatten()[:args.output_dim]
 
