@@ -72,7 +72,7 @@ def run_forecast(model, image, device, cat_dict, col_dict, fab_dict, gtrends, re
 if __name__ == '__main__':
     # Model and data loading
     model_path = 'log/GTM/GTM_experiment2---epoch=29---16-05-2024-08-49-43.ckpt'
-    model, device = load_model(model_path)
+    model, device = load_model()
 
     # Load category and color encodings
     cat_dict = torch.load(Path('VISUELLE/category_labels.pt'))
