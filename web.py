@@ -8,12 +8,12 @@ from PIL import Image
 from models.GTM import GTM
 from utils.data_multitrends import ZeroShotDataset
 
-cat_dict = torch.load(Path('VISUELLE/category_labels.pt'))
-col_dict = torch.load(Path('VISUELLE/color_labels.pt'))
-fab_dict = torch.load(Path('VISUELLE/fabric_labels.pt'))
-
 def load_model():
     # Load the model
+    cat_dict = torch.load(Path('VISUELLE/category_labels.pt'))
+    col_dict = torch.load(Path('VISUELLE/color_labels.pt'))
+    fab_dict = torch.load(Path('VISUELLE/fabric_labels.pt'))
+
     model = GTM(
         embedding_dim=32,
         hidden_dim=64,
@@ -21,19 +21,30 @@ def load_model():
         num_heads=4,
         num_layers=1,
         use_text=1,
-        cat_dict=cat_dict,
-        col_dict=col_dict,
-        fab_dict=fab_dict,
         use_img=1,
         trend_len=52,
         num_trends=3,
         use_encoder_mask=1,
         autoregressive=0,
-        gpu_num=0
+        gpu_num=0,
+        cat_dict=cat_dict,
+        col_dict=col_dict,
+        fab_dict=fab_dict,
     )
+
     model_path = 'log/GTM/GTM_experiment2---epoch=29---16-05-2024-08-49-43.ckpt'
     print(f"Loading model from {model_path}")
-    model.load_state_dict(torch.load(model_path, map_location=torch.device('cuda' if torch.cuda.is_available() else 'cpu')))
+    state_dict = torch.load(model_path, map_location=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
+
+    # Remove the extra keys
+    for key in list(state_dict.keys()):
+        if not key.startswith("module.") and "dummy_encoder" in key:
+            del state_dict[key]
+        if key in ["epoch", "global_step", "pytorch-lightning_version", "state_dict", "loops", "callbacks", "optimizer_states", "lr_schedulers", "hparams_name", "hyper_parameters"]:
+            del state_dict[key]
+
+    # Load the state dict
+    model.load_state_dict(state_dict)
     print("Model loaded successfully")
     model.eval()
 
@@ -41,6 +52,7 @@ def load_model():
     device = next(model.parameters()).device
 
     return model, device
+    
 def preprocess_image(image, device):
     # Preprocess the input image
     image = Image.open(image).convert('RGB')
