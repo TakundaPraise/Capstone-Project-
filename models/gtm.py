@@ -6,19 +6,20 @@ import pytorch_lightning as pl
 from transformers import pipeline
 from torchvision import models
 from fairseq.optim.adafactor import Adafactor
+from uti.data_multitrends import ZeroShotDataset
+import os
 
-from dataclasses import dataclass, field
-from fairseq.dataclass.configs import CommonConfig
+import argparse
+import torch
+import pandas as pd
+import pytorch_lightning as pl
+from pytorch_lightning import loggers as pl_loggers
+from pathlib import Path
+from datetime import datetime
+from uti.data_multitrends import ZeroShotDataset
 
-def create_common_config():
-    return CommonConfig()
 
-@dataclass
-class MyDataclass:
-    common: CommonConfig = field(default_factory=create_common_config)
-    # Other fields...
 
-device = torch.device("cpu")
 
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model, dropout=0.1, max_len=52):
@@ -115,13 +116,17 @@ class GTrendEmbedder(nn.Module):
         split = math.gcd(size, forecast_horizon)
         for i in range(0, size, split):
             mask[i:i+split, i:i+split] = 1
-        mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0)).to('cuda:'+str(self.gpu_num))
+        mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0)).to('cpu')
         return mask
+        #mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0)).to('cuda:'+str(self.gpu_num))
+        #return mask
     
     def _generate_square_subsequent_mask(self, size):
         mask = (torch.triu(torch.ones(size, size)) == 1).transpose(0, 1)
-        mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0)).to('cuda:'+str(self.gpu_num))
+        mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0)).to('cpu')
         return mask
+        #mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0)).to('cuda:'+str(self.gpu_num))
+        #return mask
 
     def forward(self, gtrends):
         gtrend_emb = self.input_linear(gtrends.permute(0,2,1))
@@ -157,7 +162,8 @@ class TextEmbedder(nn.Module):
         # BERT gives us embeddings for [CLS] ..  [EOS], which is why we only average the embeddings in the range [1:-1] 
         # We're not fine tuning BERT and we don't want the noise coming from [CLS] or [EOS]
         word_embeddings = [torch.FloatTensor(x[0][1:-1]).mean(axis=0) for x in word_embeddings] 
-        word_embeddings = torch.stack(word_embeddings).to('cuda:'+str(self.gpu_num))
+        word_embeddings = torch.stack(word_embeddings)
+        #word_embeddings = torch.stack(word_embeddings).to('cuda:'+str(self.gpu_num))
         
         # Embed to our embedding space
         word_embeddings = self.dropout(self.fc(word_embeddings))
@@ -213,7 +219,7 @@ class TransformerDecoderLayer(nn.Module):
     def __init__(self, d_model, nhead, dim_feedforward=2048, dropout=0.1, activation="relu"):
         super(TransformerDecoderLayer, self).__init__()
         
-        self.self_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout)
+        self.multihead_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout)
 
         # Implementation of Feedforward model
         self.linear1 = nn.Linear(d_model, dim_feedforward)
@@ -233,58 +239,65 @@ class TransformerDecoderLayer(nn.Module):
         super(TransformerDecoderLayer, self).__setstate__(state)
 
     def forward(self, tgt, memory, tgt_mask = None, memory_mask = None, tgt_key_padding_mask = None, 
-            memory_key_padding_mask = None, tgt_is_causal = None, memory_causal= None):
+            memory_key_padding_mask = None):
 
-        tgt2, attn_weights = self.self_attn(tgt, memory, memory)
+        tgt2, attn_weights = self.multihead_attn(tgt, memory, memory)
         tgt = tgt + self.dropout2(tgt2)
         tgt = self.norm2(tgt)
         tgt2 = self.linear2(self.dropout(self.activation(self.linear1(tgt))))
         tgt = tgt + self.dropout3(tgt2)
         tgt = self.norm3(tgt)
         return tgt, attn_weights
+
 class GTM(pl.LightningModule):
-    def __init__(self, embedding_dim, hidden_dim, output_dim, num_heads, num_layers, use_text, use_img, 
-                cat_dict, col_dict, fab_dict, trend_len, num_trends, use_encoder_mask=1, autoregressive=False):
+    def __init__(self, embedding_dim, hidden_dim, output_dim, num_heads, num_layers, use_text, use_img, \
+                cat_dict, col_dict, fab_dict, trend_len, num_trends, gpu_num, use_encoder_mask=1, autoregressive=False):
         super().__init__()
         self.hidden_dim = hidden_dim
         self.embedding_dim = embedding_dim
         self.output_len = output_dim
         self.use_encoder_mask = use_encoder_mask
         self.autoregressive = autoregressive
+        self.gpu_num = gpu_num
+        self.save_hyperparameters()
 
+         # Encoder
         self.dummy_encoder = DummyEmbedder(embedding_dim)
         self.image_encoder = ImageEmbedder()
-        self.text_encoder = TextEmbedder(embedding_dim, cat_dict, col_dict, fab_dict, device)
-        self.gtrend_encoder = GTrendEmbedder(output_dim, hidden_dim, use_encoder_mask, trend_len, num_trends, device)
+        self.text_encoder = TextEmbedder(embedding_dim, cat_dict, col_dict, fab_dict, gpu_num)
+        self.gtrend_encoder = GTrendEmbedder(output_dim, hidden_dim, use_encoder_mask, trend_len, num_trends, gpu_num)
         self.static_feature_encoder = FusionNetwork(embedding_dim, hidden_dim, use_img, use_text)
 
+        # Decoder
         self.decoder_linear = TimeDistributed(nn.Linear(1, hidden_dim))
-        decoder_layer = TransformerDecoderLayer(d_model=self.hidden_dim, nhead=num_heads, 
+        decoder_layer = TransformerDecoderLayer(d_model=self.hidden_dim, nhead=num_heads, \
                                                 dim_feedforward=self.hidden_dim * 4, dropout=0.1)
-
+        
         if self.autoregressive: self.pos_encoder = PositionalEncoding(hidden_dim, max_len=12)
         self.decoder = nn.TransformerDecoder(decoder_layer, num_layers)
-
+        
         self.decoder_fc = nn.Sequential(
             nn.Linear(hidden_dim, self.output_len if not self.autoregressive else 1),
             nn.Dropout(0.2)
         )
-
     def _generate_square_subsequent_mask(self, size):
         mask = (torch.triu(torch.ones(size, size)) == 1).transpose(0, 1)
-        mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0)).to(device)
+        mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0)).to('cuda:'+str(self.gpu_num))
         return mask
 
     def forward(self, category, color, fabric, temporal_features, gtrends, images):
+        # Encode features and get inputs
         img_encoding = self.image_encoder(images)
         dummy_encoding = self.dummy_encoder(temporal_features)
         text_encoding = self.text_encoder(category, color, fabric)
         gtrend_encoding = self.gtrend_encoder(gtrends)
 
+        # Fuse static features together
         static_feature_fusion = self.static_feature_encoder(img_encoding, text_encoding, dummy_encoding)
 
         if self.autoregressive == 1:
-            tgt = torch.zeros(self.output_len, gtrend_encoding.shape[1], gtrend_encoding.shape[-1]).to(device)
+            # Decode
+            tgt = torch.zeros(self.output_len, gtrend_encoding.shape[1], gtrend_encoding.shape[-1]).to('cuda:'+str(self.gpu_num))
             tgt[0] = static_feature_fusion
             tgt = self.pos_encoder(tgt)
             tgt_mask = self._generate_square_subsequent_mask(self.output_len)
@@ -292,6 +305,7 @@ class GTM(pl.LightningModule):
             decoder_out, attn_weights = self.decoder(tgt, memory, tgt_mask)
             forecast = self.decoder_fc(decoder_out)
         else:
+            # Decode (generatively/non-autoregressively)
             tgt = static_feature_fusion.unsqueeze(0)
             memory = gtrend_encoding
             decoder_out, attn_weights = self.decoder(tgt, memory)
@@ -300,10 +314,13 @@ class GTM(pl.LightningModule):
         return forecast.view(-1, self.output_len), attn_weights
 
     def configure_optimizers(self):
-        return Adafactor(self.parameters(), lr=None)
+        optimizer = Adafactor(self.parameters(),scale_parameter=True, relative_step=True, warmup_init=True, lr=None)
+    
+        return [optimizer]
+
 
     def training_step(self, train_batch, batch_idx):
-        item_sales, category, color, fabric, temporal_features, gtrends, images = train_batch
+        item_sales, category, color, fabric, temporal_features, gtrends, images = train_batch 
         forecasted_sales, _ = self.forward(category, color, fabric, temporal_features, gtrends, images)
         loss = F.mse_loss(item_sales, forecasted_sales.squeeze())
         self.log('train_loss', loss)
@@ -311,17 +328,31 @@ class GTM(pl.LightningModule):
         return loss
 
     def validation_step(self, test_batch, batch_idx):
-        item_sales, category, color, fabric, temporal_features, gtrends, images = test_batch
+        item_sales, category, color, fabric, temporal_features, gtrends, images = test_batch 
         forecasted_sales, _ = self.forward(category, color, fabric, temporal_features, gtrends, images)
 
+        val_step_outputs = item_sales.squeeze(), forecasted_sales.squeeze()
+        return val_step_outputs
+        #return item_sales.squeeze(), forecasted_sales.squeeze()
+        
+        #return {'item': item_sales.squeeze(), 'forecasted': forecasted_sales.squeeze()}
+        #val_step_outputs = {'item': item_sales.squeeze(), 'forecasted': forecasted_sales.squeeze()}
+        #val_step_outputs = [(item_sales.squeeze(), forecasted_sales.squeeze())]
+        #return val_step_outputs
+
+    
+    def validation_step(self, test_batch, batch_idx):
+        item_sales, category, color, fabric, temporal_features, gtrends, images = test_batch 
+        forecasted_sales, _ = self.forward(category, color, fabric, temporal_features, gtrends, images)
+        
         item_sales, forecasted_sales = item_sales.squeeze(), forecasted_sales.squeeze()
-
-        rescaled_item_sales, rescaled_forecasted_sales = item_sales*1065, forecasted_sales*1065
-
+        
+        rescaled_item_sales, rescaled_forecasted_sales = item_sales*1065, forecasted_sales*1065 # 1065 is the normalization factor (max of the sales of the training set)
         loss = F.mse_loss(item_sales, forecasted_sales.squeeze())
         mae = F.l1_loss(rescaled_item_sales, rescaled_forecasted_sales)
-
         self.log('val_mae', mae)
         self.log('val_loss', loss)
 
         print('Validation MAE:', mae.detach().cpu().numpy(), 'LR:', self.optimizers().param_groups[0]['lr'])
+        
+
