@@ -26,7 +26,7 @@ def load_model():
     )
     model_path = 'log/GTM/GTM_experiment2---epoch=29---16-05-2024-08-49-43.ckpt'
     print(f"Loading model from {model_path}")
-    model.load_state_dict(torch.load(model_path, map_location=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
+    model.load_state_dict(torch.load(model_path, map_location=torch.device('cuda' if torch.cuda.is_available() else 'cpu')))
     print("Model loaded successfully")
     model.eval()
 
