@@ -67,7 +67,7 @@ def load_model(args):
     checkpoint = torch.load(args.ckpt_path, map_location=torch.device('cpu'))
     model.load_state_dict(checkpoint['state_dict'], strict=False)
     #model.load_state_dict(torch.load(args.ckpt_path)['state_dict'], strict=False)
-    return model, cat_dict, col_dict, gtrends
+    return model, cat_dict, col_dict, gtrends, fab_dict
     #return model
 
 def forecast(model, img_path, args):
