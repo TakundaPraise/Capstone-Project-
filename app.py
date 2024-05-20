@@ -121,7 +121,7 @@ def main():
 
     args = parser.parse_args()
 
-    model = load_model(args)
+    model, cat_dict, col_dict, gtrends, fab_dict = load_model(args)
 
     # Streamlit app
     st.header("Upload an Image")
