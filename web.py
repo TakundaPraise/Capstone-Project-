@@ -26,13 +26,14 @@ def load_model():
     )
     model_path = 'log/GTM/GTM_experiment2---epoch=29---16-05-2024-08-49-43.ckpt'
     print(f"Loading model from {model_path}")
-    model.load_state_dict(torch.load(model_path, map_location=torch.device('cuda' if torch.cuda.is_available() else 'cpu')))
+    model.load_state_dict(torch.load(model_path, map_location=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
     print("Model loaded successfully")
     model.eval()
 
-    return model
-    return model, device
+    # Get the device that the model is loaded on
+    device = next(model.parameters()).device
 
+    return model, device
 def preprocess_image(image, device):
     # Preprocess the input image
     image = Image.open(image).convert('RGB')
@@ -71,7 +72,6 @@ def run_forecast(model, image, device, cat_dict, col_dict, fab_dict, gtrends, re
 
 if __name__ == '__main__':
     # Model and data loading
-    model_path = 'log/GTM/GTM_experiment2---epoch=29---16-05-2024-08-49-43.ckpt'
     model, device = load_model()
 
     # Load category and color encodings
@@ -86,12 +86,16 @@ if __name__ == '__main__':
     rescale_vals = np.load(Path('VISUELLE/normalization_scale.npy'))
 
     # Streamlit app
+    import streamlit as st
+
     st.title('Zero-shot Sales Forecasting')
+
     uploaded_file = st.file_uploader('Upload an image', type=['jpg', 'jpeg', 'png'])
 
     if uploaded_file is not None:
-        # Generate forecasts
         image = Image.open(uploaded_file)
+
+        # Generate forecasts
         rescaled_forecasts = run_forecast(model, image, device, cat_dict, col_dict, fab_dict, gtrends, rescale_vals)
 
         # Display the rescaled forecasts
@@ -103,4 +107,6 @@ if __name__ == '__main__':
         fig, ax = plt.subplots(figsize=(12, 6))
         ax.plot(forecast_df.columns, rescaled_forecasts)
         ax.set_xlabel('Month')
-        ax.set_ylabel
+        ax.set_ylabel('Sales')
+        ax.set_title('Sales Forecasts')
+        st.pyplot(fig)
