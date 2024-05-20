@@ -121,8 +121,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Zero-shot sales forecasting')
 
     # General arguments
-    parser.add_argument('--data_folder', type=str, default='dataset/')
-    parser.add_argument('--ckpt_path', type=str, default='log/path-to-model.ckpt')
+    parser.add_argument('--data_folder', type=str, default='VISUELLE/')
+    parser.add_argument('--ckpt_path', type=str, default='log/GTM\GTM_experiment2---epoch=29---16-05-2024-08-49-43.ckpt')
     parser.add_argument('--gpu_num', type=int, default=0)
     parser.add_argument('--seed', type=int, default=21)
 
