@@ -35,7 +35,7 @@ def load_model():
         num_trends=3,
         use_encoder_mask=1,
         autoregressive=0,
-        gpu_num=0,
+        gpu_num=None,
         cat_dict=cat_dict,
         col_dict=col_dict,
         fab_dict=fab_dict,
