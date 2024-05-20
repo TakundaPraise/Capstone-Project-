@@ -77,9 +77,9 @@ def forecast(model, cat_dict, col_dict, gtrends, fab_dict, img_path, args):
     img = img_transforms(img).unsqueeze(0)
 
     # Get the product information
-    category = torch.tensor(cat_dict)
-    color = torch.tensor(col_dict)
-    fabric = torch.tensor(fab_dict)
+    category = cat_dict
+    color = col_dict
+    fabric = fab_dict
     temporal_features = torch.zeros(1, 4)
     gtrends = torch.zeros(1, args.num_trends, args.trend_len)
 
