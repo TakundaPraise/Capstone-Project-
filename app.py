@@ -70,7 +70,7 @@ def load_model(args):
     return model, cat_dict, col_dict, gtrends, fab_dict
     #return model
 
-def forecast(model, img_path, args):
+def forecast(model, cat_dict, col_dict, gtrends, fab_dict, img_path, args):
     # Load and preprocess the image
     img_transforms = Compose([Resize((10, 10)), ToTensor(), Normalize(mean=[0.012, 0.010, 0.008], std=[0.029, 0.024, 0.025])])
     img = Image.open(img_path).convert('RGB')
@@ -99,7 +99,6 @@ def main():
     parser.add_argument('--data_folder', type=str, default='VISUELLE/')
     parser.add_argument('--log_dir', type=str, default='log')
     parser.add_argument('--seed', type=int, default=21)
-    parser.add_argument('--epochs', type=int, default=30)
     parser.add_argument('--ckpt_path', type=str, default='log/GTM/GTM_experiment2---epoch=29---16-05-2024-08-49-43.ckpt')  # Add this line
     parser.add_argument('--gpu_num', type=int, default=0)
 
