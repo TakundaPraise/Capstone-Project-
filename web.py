@@ -100,7 +100,10 @@ def run_forecast(model, image_path, device, cat_dict, col_dict, fab_dict, gtrend
     textures = torch.tensor([0], device=device) # Placeholder textures
     temporal_features = torch.zeros(1, 52, device=device)
     gtrends_tensor = torch.zeros(1, 52, 3, device=device)
-
+    
+    batch = image.unsqueeze(0)
+    batch = batch.squeeze(2)
+    
     # Generate forecasts
     with torch.no_grad():
         #y_pred, _ = model(category, color, textures, temporal_features, gtrends_tensor, image)
@@ -109,11 +112,9 @@ def run_forecast(model, image_path, device, cat_dict, col_dict, fab_dict, gtrend
     rescaled_forecasts = forecasts * rescale_vals
 
     return rescaled_forecasts
-
-
-   
     
-
+    
+    
 
 if __name__ == '__main__':
     # Model and data loading
