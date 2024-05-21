@@ -9,7 +9,7 @@ from torchvision.transforms import Resize, ToTensor, Normalize, Compose
 from sklearn.preprocessing import MinMaxScaler
 import streamlit as st
 from pathlib import Path
-from models.GTM import GTM
+from models.gtm import GTM
 from models.FCN import FCN
 
 # Set up Streamlit app
