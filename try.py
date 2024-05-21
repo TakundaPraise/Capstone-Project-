@@ -89,7 +89,7 @@ if uploaded_file is not None:
         #fabric = torch.LongTensor([fab_dict['cotton']]).to(device)
         category = torch.tensor([0], device=device)  # Placeholder category
         color = torch.tensor([0], device=device)    # Placeholder color
-        textures = torch.tensor([0], device=device) # Placeholder textures
+        fabric = torch.tensor([0], device=device) # Placeholder textures
         temporal_features = torch.zeros(1, 4).to(device)
         gtrends = torch.zeros(1, 3, 52).to(device)
 
