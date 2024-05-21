@@ -74,23 +74,12 @@ model.eval()
 
 # Streamlit UI
 
-
-# Create two columns
-col1, col2 = st.columns([1, 3])
-
-# Add the image to the first column
-with col1:
-    st.image('fashion3.jpeg', width=150)  # Replace 'path_to_image.jpg' with the path to your image
-
-# Add the title to the second column
-with col2:
-    st.title("PREDICTIVE ORDERING FOR NEW FASHION PRODUCTS")
-    st.markdown('<p style="color:blue;font-size:30px;">PREDICTIVE ORDERING FOR NEW FASHION PRODUCTS</p>', unsafe_allow_html=True)
-
+welcome_image = "fashion3.jpeg"
+st.image(welcome_image, caption="", use_column_width=True)
 # Rest of the code...
 
-#st.title("PREDICTIVE ORDERING FOR NEW FASHION PRODUCTS ")
-#st.markdown('<p style="color:blue;font-size:30px;">PREDICTIVE ORDERING FOR NEW FASHION PRODUCTS</p>', unsafe_allow_html=True)
+st.title("PREDICTIVE ORDERING FOR NEW FASHION PRODUCTS ")
+st.markdown('<p style="color:blue;font-size:30px;">PREDICTIVE ORDERING FOR NEW FASHION PRODUCTS</p>', unsafe_allow_html=True)
 
 
 # Add an overview of how the system works
