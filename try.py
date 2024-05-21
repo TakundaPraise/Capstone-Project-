@@ -76,7 +76,7 @@ model.eval()
 
 
 # Create two columns
-col1, col2 = st.beta_columns([1, 3])
+col1, col2 = st.columns([1, 3])
 
 # Add the image to the first column
 with col1:
