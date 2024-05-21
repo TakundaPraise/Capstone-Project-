@@ -102,7 +102,7 @@ if uploaded_file is not None:
     # Display the forecasts
     st.subheader("Sales Forecast")
     st.line_chart(rescaled_forecasts)
-    chart.set_axis_labels("Time", "Sales")
+    chart.set_axis_labels("Month", "Sales")
 
     st.subheader("Forecast Table")
     forecast_df = pd.DataFrame(rescaled_forecasts, columns=['Sales'])
