@@ -78,7 +78,7 @@ model.eval()
 # Rest of the code...
 
 #st.title("PREDICTIVE ORDERING FOR NEW FASHION PRODUCTS ")
-st.markdown('<p style="color:blue;font-size:30px;">PREDICTIVE ORDERING FOR NEW FASHION PRODUCTS</p>', unsafe_allow_html=True)
+st.markdown('<p style="color:green;font-size:30px;">PREDICTIVE ORDERING FOR NEW FASHION PRODUCTS</p>', unsafe_allow_html=True)
 
 welcome_image = "fashion3.jpeg"
 st.image(welcome_image, caption="", width=250)
