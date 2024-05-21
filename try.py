@@ -11,6 +11,8 @@ import streamlit as st
 from pathlib import Path
 from models.gtm import GTM
 from models.FCN import FCN
+import matplotlib.pyplot as plt
+
 
 # Set up Streamlit app
 st.set_page_config(page_title="Zero-shot Sales Forecasting")
