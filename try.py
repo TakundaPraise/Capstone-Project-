@@ -75,7 +75,7 @@ model.eval()
 # Streamlit UI
 
 welcome_image = "fashion3.jpeg"
-st.image(welcome_image, caption="", use_column_width=True)
+st.image(welcome_image, caption="", width=100)
 # Rest of the code...
 
 #st.title("PREDICTIVE ORDERING FOR NEW FASHION PRODUCTS ")
