@@ -85,11 +85,11 @@ if uploaded_file is not None:
     with torch.no_grad():
         #category = torch.tensor([0], device=device)  # Placeholder category
         #category = torch.LongTensor([cat_dict['shirt']]).to(device)
-        category = torch.LongTensor([cat_dict]).to(device)
         #color = torch.LongTensor([col_dict['blue']]).to(device
-        color = torch.LongTensor([col_dict]).to(device)
-        fabric = torch.LongTensor([fab_dict]).to(device)
         #fabric = torch.LongTensor([fab_dict['cotton']]).to(device)
+        category = torch.tensor([0], device=device)  # Placeholder category
+        color = torch.tensor([0], device=device)    # Placeholder color
+        textures = torch.tensor([0], device=device) # Placeholder textures
         temporal_features = torch.zeros(1, 4).to(device)
         gtrends = torch.zeros(1, 3, 52).to(device)
 
