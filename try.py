@@ -106,3 +106,11 @@ if uploaded_file is not None:
     st.subheader("Forecast Table")
     forecast_df = pd.DataFrame(rescaled_forecasts, columns=['Sales'])
     st.table(forecast_df)
+
+    st.subheader('Forecast Visualization')
+    fig, ax = plt.subplots(figsize=(12, 6))
+    ax.plot(forecast_df.columns, rescaled_forecasts)
+    ax.set_xlabel('Month')
+    ax.set_ylabel('Sales')
+    ax.set_title('Sales Forecasts')
+    st.pyplot(fig)
