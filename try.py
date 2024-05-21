@@ -82,7 +82,9 @@ st.markdown('<p style="color:green;font-size:30px;">PREDICTIVE ORDERING FOR NEW 
 
 welcome_image = "fashion3.jpeg"
 st.image(welcome_image, caption="", width=250)
+
 # Add an overview of how the system works
+st.markdown('<p style="color:green;font-size:30px;"></p>', unsafe_allow_html=True)
 st.subheader("System Overview")
 st.write("This system utilizes a zero-shot sales predictions approach. It takes into account various inputs such as image features, category, color, fabric, temporal features, and Google Trends data to generate sales predictions for new fashion products to help fashion retailers when doing ordering .")
 
