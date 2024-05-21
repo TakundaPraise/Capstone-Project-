@@ -73,24 +73,26 @@ model.to(device)
 model.eval()
 
 # Streamlit UI
-# Add a background image to the home page
-background_image = Image.open('fashion3.jpeg')
-background_image_bytes = background_image.tobytes()
-background_image_base64 = base64.b64encode(background_image_bytes).decode()
-st.markdown(
-    f"""
-    <style>
-    .reportview-container {{
-        background: url(data:image/jpeg;base64,{background_image_base64});
-        background-size: cover;
-    }}
-    </style>
-    """,
-    unsafe_allow_html=True
-)
 
-st.title("PREDICTIVE ORDERING FOR NEW FASHION PRODUCTS ")
-st.markdown('<p style="color:blue;font-size:30px;">Zero-shot Sales Forecasting</p>', unsafe_allow_html=True)
+# Set up Streamlit app
+st.set_page_config(page_title="My Streamlit App")
+
+# Create two columns
+col1, col2 = st.beta_columns([1, 3])
+
+# Add the image to the first column
+with col1:
+    st.image('fashion3.jpeg', width=150)  # Replace 'path_to_image.jpg' with the path to your image
+
+# Add the title to the second column
+with col2:
+    st.title("PREDICTIVE ORDERING FOR NEW FASHION PRODUCTS")
+    st.markdown('<p style="color:blue;font-size:30px;">PREDICTIVE ORDERING FOR NEW FASHION PRODUCTS</p>', unsafe_allow_html=True)
+
+# Rest of the code...
+
+#st.title("PREDICTIVE ORDERING FOR NEW FASHION PRODUCTS ")
+#st.markdown('<p style="color:blue;font-size:30px;">PREDICTIVE ORDERING FOR NEW FASHION PRODUCTS</p>', unsafe_allow_html=True)
 
 
 # Add an overview of how the system works
