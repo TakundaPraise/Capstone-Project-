@@ -75,11 +75,13 @@ model.eval()
 # Streamlit UI
 # Add a background image to the home page
 background_image = Image.open('fashion3.jpeg')
+background_image_bytes = background_image.tobytes()
+background_image_base64 = base64.b64encode(background_image_bytes).decode()
 st.markdown(
     f"""
     <style>
     .reportview-container {{
-        background: url(data:image/jpeg;base64,{base64.b64encode(background_image.read()).decode()});
+        background: url(data:image/jpeg;base64,{background_image_base64});
         background-size: cover;
     }}
     </style>
