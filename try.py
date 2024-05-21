@@ -74,8 +74,6 @@ model.eval()
 
 # Streamlit UI
 
-# Set up Streamlit app
-st.set_page_config(page_title="My Streamlit App")
 
 # Create two columns
 col1, col2 = st.beta_columns([1, 3])
