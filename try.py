@@ -72,7 +72,27 @@ model.to(device)
 model.eval()
 
 # Streamlit UI
-st.title("Zero-shot Sales Forecasting")
+# Add a background image to the home page
+background_image = Image.open('fashion3.jpeg')
+st.markdown(
+    f"""
+    <style>
+    .reportview-container {{
+        background: url(data:image/jpeg;base64,{base64.b64encode(background_image.read()).decode()});
+        background-size: cover;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+st.title("PREDICTIVE ORDERING FOR NEW FASHION PRODUCTS ")
+st.markdown('<p style="color:blue;font-size:30px;">Zero-shot Sales Forecasting</p>', unsafe_allow_html=True)
+
+
+# Add an overview of how the system works
+st.subheader("System Overview")
+st.write("This system utilizes a zero-shot sales predictions approach. It takes into account various inputs such as image features, category, color, fabric, temporal features, and Google Trends data to generate sales predictions for new fashion products to help fashion retailers when doing ordering .")
 
 # File upload
 uploaded_file = st.file_uploader("Choose an image", type=["jpg", "jpeg", "png"])
@@ -102,17 +122,11 @@ if uploaded_file is not None:
         rescaled_forecasts = y_pred.detach().cpu().numpy().flatten()[:12] * rescale_vals
 
     # Display the forecasts
-    st.subheader("Sales Forecast")
+    st.subheader("NEW PRODUCTS SALES PREDICTIONS LINE CHART ")
     st.line_chart(rescaled_forecasts)
 
-    st.subheader("Forecast Table")
+    st.subheader("NEW PRODUCTS SALES PREDICTIONS TABLE")
     forecast_df = pd.DataFrame(rescaled_forecasts, columns=['Sales'])
     st.table(forecast_df)
 
-    st.subheader('Forecast Visualization')
-    fig, ax = plt.subplots(figsize=(12, 6))
-    ax.plot(forecast_df.columns, rescaled_forecasts)
-    ax.set_xlabel('Month')
-    ax.set_ylabel('Sales')
-    ax.set_title('Sales Forecasts')
-    st.pyplot(fig)
+    
