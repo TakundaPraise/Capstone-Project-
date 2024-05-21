@@ -62,8 +62,9 @@ else:
         autoregressive=0,
         gpu_num=0
     )
+#orch.load with map_location=torch.device('cpu') 
 
-model.load_state_dict(torch.load(ckpt_path)['state_dict'], strict=False)
+model.load_state_dict(torch.load(ckpt_path, map_location=torch.device('cpu'))['state_dict'], strict=False)
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 model.eval()
