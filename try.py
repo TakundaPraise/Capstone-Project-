@@ -16,7 +16,7 @@ import base64
 
 
 # Set up Streamlit app
-st.set_page_config(page_title="Zero-shot Sales Forecasting")
+st.set_page_config(page_title="Capstone Project ")
 
 # Load category and color encodings
 cat_dict = torch.load(Path('VISUELLE/category_labels.pt'))
@@ -74,14 +74,14 @@ model.eval()
 
 # Streamlit UI
 
-welcome_image = "fashion3.jpeg"
-st.image(welcome_image, caption="", width=100)
+
 # Rest of the code...
 
 #st.title("PREDICTIVE ORDERING FOR NEW FASHION PRODUCTS ")
 st.markdown('<p style="color:blue;font-size:30px;">PREDICTIVE ORDERING FOR NEW FASHION PRODUCTS</p>', unsafe_allow_html=True)
 
-
+welcome_image = "fashion3.jpeg"
+st.image(welcome_image, caption="", width=250)
 # Add an overview of how the system works
 st.subheader("System Overview")
 st.write("This system utilizes a zero-shot sales predictions approach. It takes into account various inputs such as image features, category, color, fabric, temporal features, and Google Trends data to generate sales predictions for new fashion products to help fashion retailers when doing ordering .")
