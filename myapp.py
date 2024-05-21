@@ -84,11 +84,11 @@ welcome_image = "fashion3.jpeg"
 st.image(welcome_image, caption="", width=250)
 
 # Add an overview of how the system works
-st.subheader("System Overview")
-st.write("This system utilizes a zero-shot sales predictions approach. It takes into account various inputs such as image features, category, color, fabric, temporal features, and Google Trends data to generate sales predictions for new fashion products to help fashion retailers when doing ordering .")
+st.sidebar.subheader("System Overview")
+st.sidebar.write("This system utilizes a zero-shot sales predictions approach. It takes into account various inputs such as image features, category, color, fabric, temporal features, and Google Trends data to generate sales predictions for new fashion products to help fashion retailers when doing ordering .")
 
 # File upload
-uploaded_file = st.file_uploader("Choose an image", type=["jpg", "jpeg", "png"])
+uploaded_file = st.sidebar.file_uploader("Choose an image", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
     # Preprocess the uploaded image
@@ -116,10 +116,16 @@ if uploaded_file is not None:
 
     # Display the forecasts
     st.subheader("NEW PRODUCTS SALES PREDICTIONS LINE CHART ")
-    st.line_chart(rescaled_forecasts)
+    #st.line_chart(rescaled_forecasts)
+    chart_expander = st.expander("Click to expand", expanded=False)
+    with chart_expander:
+        st.line_chart(rescaled_forecasts)
 
     st.subheader("NEW PRODUCTS SALES PREDICTIONS TABLE")
     forecast_df = pd.DataFrame(rescaled_forecasts, columns=['Sales'])
-    st.table(forecast_df)
+    #st.table(forecast_df)
+    chart_expander = st.expander("Click to expand", expanded=False)
+    with chart_expander:
+        st.table(forecast_df)
 
     
