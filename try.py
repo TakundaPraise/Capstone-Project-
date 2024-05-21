@@ -78,7 +78,7 @@ welcome_image = "fashion3.jpeg"
 st.image(welcome_image, caption="", use_column_width=True)
 # Rest of the code...
 
-st.title("PREDICTIVE ORDERING FOR NEW FASHION PRODUCTS ")
+#st.title("PREDICTIVE ORDERING FOR NEW FASHION PRODUCTS ")
 st.markdown('<p style="color:blue;font-size:30px;">PREDICTIVE ORDERING FOR NEW FASHION PRODUCTS</p>', unsafe_allow_html=True)
 
 
