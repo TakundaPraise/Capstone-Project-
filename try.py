@@ -12,6 +12,7 @@ from pathlib import Path
 from models.gtm import GTM
 from models.FCN import FCN
 import matplotlib.pyplot as plt
+import base64
 
 
 # Set up Streamlit app
