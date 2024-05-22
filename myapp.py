@@ -136,7 +136,7 @@ if uploaded_file is not None:
 
     st.subheader("NEW PRODUCTS SALES PREDICTIONS TABLE")
     forecast_df = pd.DataFrame(rescaled_forecasts, columns=['Sales'])
-    forecast_df.index = ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
+    forecast_df.index = ['Jun','Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May']
     #st.table(forecast_df)
     chart_expander = st.expander("Click to expand", expanded=False)
     with chart_expander:
