@@ -121,7 +121,7 @@ if uploaded_file is not None:
     chart_expander = st.expander("Click to expand", expanded=False)
     with chart_expander:
         st.write('The line chart represents the sales predictions for new fashion products. The x-axis of the chart represents the time period, in months e.g 1 is january, 12 is december . The y-axis represents the sales predictions.The chart displays a line that indicates the predicted sales over time. The values on the y-axis represent the estimated number of sales for each corresponding time point on the x-axis. The line connects these data points, showing the trend or pattern in the sales predictions.However, the chart provides a visual representation of how the sales predictions fluctuate over time.Additionally, the code uses various inputs such as image features, category, color, fabric, temporal features, and Google Trends data to generate these sales predictions. The predictions are then rescaled using normalization values and presented in both the line chart and the table.')
-        month_labels = ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', ]
+        month_labels = ['Jun','Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May' ]
 
         # Create the line chart with updated labels
         fig, ax = plt.subplots(figsize=(12, 6))
