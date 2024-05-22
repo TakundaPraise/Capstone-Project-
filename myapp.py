@@ -124,7 +124,7 @@ if uploaded_file is not None:
     chart_expander = st.expander("Click to expand", expanded=False)
     with chart_expander:
         st.write('The line chart represents the sales predictions for new fashion products. he y-axis represents the sales predictions.The chart displays a line that indicates the predicted sales over time. The values on the y-axis represent the estimated number of sales for each corresponding time point on the x-axis. The line connects these data points, showing the trend or pattern in the sales predictions. The predictions are then rescaled using normalization values and presented in both the line chart and the table.')
-        month_labels = ['Jun','Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May' ]
+        month_labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May','Jun','Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'  ]
 
         # Create the line chart with updated labels
         fig, ax = plt.subplots(figsize=(12, 6))
@@ -141,7 +141,7 @@ if uploaded_file is not None:
     st.subheader("NEW PRODUCTS SALES PREDICTIONS TABLE")
     #forecast_df = pd.DataFrame(rescaled_forecasts, columns=['Sales'])
     forecast_df = pd.DataFrame(rounded_forecasts, columns=['Sales'])
-    forecast_df.index = ['Jun','Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May']
+    forecast_df.index = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun','Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', ]
     #st.table(forecast_df)
     chart_expander = st.expander("Click to expand", expanded=False)
     with chart_expander:
