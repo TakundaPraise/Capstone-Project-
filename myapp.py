@@ -124,7 +124,7 @@ if uploaded_file is not None:
     chart_expander = st.expander("Click to expand", expanded=False)
     with chart_expander:
         st.write('The line chart represents the sales predictions for new fashion products. he y-axis represents the sales predictions.The chart displays a line that indicates the predicted sales over time. The values on the y-axis represent the estimated number of sales for each corresponding time point on the x-axis. The line connects these data points, showing the trend or pattern in the sales predictions. The predictions are then rescaled using normalization values and presented in both the line chart and the table.')
-        week_labels = [f'Week {i+1}' for i in range(52)]
+        week_labels = [f'Week {i+1}' for i in range(12)]
 
         # Create the line chart with updated labels
         fig, ax = plt.subplots(figsize=(12, 6))
