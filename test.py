@@ -81,7 +81,8 @@ st.sidebar.subheader("System Overview")
 st.sidebar.write("This system utilizes a zero-shot sales predictions approach. It takes into account various inputs such as image features, category, color, fabric, temporal features, and Google Trends data to generate sales predictions for new fashion products to help fashion retailers when doing ordering.")
 
 # File upload
-uploaded_file = st.sidebar.file_uploader("Choose an image", type=["jpg", "jpeg", "png"], accept_multiple_files=False)
+st.write('please upload an i age of file type JPG, JPEG, or PNG')
+uploaded_file = st.sidebar.file_uploader("Choose an image",  accept_multiple_files=False)
 
 if uploaded_file is not None:
     # Check the file size
