@@ -112,11 +112,11 @@ if uploaded_file is not None:
 
         # Rescale the forecasts
         rescale_vals = np.load('VISUELLE/normalization_scale.npy')
-        rescaled_forecasts = y_pred.detach().cpu().numpy().flatten()[:52] * rescale_vals
+        rescaled_forecasts = y_pred.detach().cpu().numpy().flatten()[:12] * rescale_vals
 
         # Round the forecasts to whole numbers
         rounded_forecasts = np.round(rescaled_forecasts).astype(int)
-        
+        week_labels = [f'Week {i+1}' for i in range(12)]
 
     # Display the forecasts
     st.subheader("NEW PRODUCTS SALES PREDICTIONS LINE CHART ")
