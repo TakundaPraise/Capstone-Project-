@@ -113,6 +113,9 @@ if uploaded_file is not None:
         # Rescale the forecasts
         rescale_vals = np.load('VISUELLE/normalization_scale.npy')
         rescaled_forecasts = y_pred.detach().cpu().numpy().flatten()[:12] * rescale_vals
+
+        # Round the forecasts to whole numbers
+        rounded_forecasts = np.round(rescaled_forecasts).astype(int)
         
 
     # Display the forecasts
@@ -125,7 +128,8 @@ if uploaded_file is not None:
 
         # Create the line chart with updated labels
         fig, ax = plt.subplots(figsize=(12, 6))
-        ax.plot(rescaled_forecasts)
+        #ax.plot(rescaled_forecasts)
+        ax.plot(rounded_forecasts)
         ax.set_xticks(range(len(month_labels)))
         ax.set_xticklabels(month_labels)
         ax.set_xlabel('Month')
@@ -135,7 +139,8 @@ if uploaded_file is not None:
         
 
     st.subheader("NEW PRODUCTS SALES PREDICTIONS TABLE")
-    forecast_df = pd.DataFrame(rescaled_forecasts, columns=['Sales'])
+    #forecast_df = pd.DataFrame(rescaled_forecasts, columns=['Sales'])
+    forecast_df = pd.DataFrame(rounded_forecasts, columns=['Sales'])
     forecast_df.index = ['Jun','Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May']
     #st.table(forecast_df)
     chart_expander = st.expander("Click to expand", expanded=False)
