@@ -142,5 +142,8 @@ if uploaded_file is not None:
         st.pyplot(fig)
     
     with st.expander("NEW PRODUCTS SALES PREDICTIONS TABLE"):
-        selected_forecast_df = pd.DataFrame(selected_forecasts, columns=['SalesPredictions'], index=selected_months)
+        selected_forecast_df = pd.DataFrame({
+            'Month': selected_months,
+            'SalesPredictions': selected_forecasts
+        })
         st.table(selected_forecast_df)
