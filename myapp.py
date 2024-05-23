@@ -96,6 +96,10 @@ if uploaded_file is not None:
     img_transforms = Compose([Resize((40, 40)), ToTensor(), Normalize(mean=[0.012, 0.010, 0.008], std=[0.029, 0.024, 0.025])])
     image_feature = img_transforms(img).unsqueeze(0).to(device)
 
+    # Display the uploaded image
+    st.subheader("Uploaded Image")
+    st.image(uploaded_file, caption="Uploaded Image", use_column_width=True)
+
     # Generate forecasts
     with torch.no_grad():
         #category = torch.tensor([0], device=device)  # Placeholder category
