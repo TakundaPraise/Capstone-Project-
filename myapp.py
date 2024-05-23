@@ -156,7 +156,7 @@ if uploaded_file is not None:
 
     st.subheader("NEW PRODUCTS SALES PREDICTIONS TABLE")
     #forecast_df = pd.DataFrame(rescaled_forecasts, columns=['Sales'])
-    forecast_df = pd.DataFrame(rounded_forecasts, columns=['Sales'])
+    forecast_df = pd.DataFrame(rounded_forecasts, columns=['SalesPredictions '])
     forecast_df.index = week_labels
 
     #forecast_df.index = ['Jul', 'Aug','Sep', 'Oct', 'Nov','Dec','Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'  ]
