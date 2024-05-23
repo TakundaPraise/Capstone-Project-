@@ -125,7 +125,7 @@ if uploaded_file is not None:
         # Generate the month labels
         month_labels = ['January', 'February', 'March', 'April', 'May', 'June', 
                     'July', 'August', 'September', 'October', 'November', 'December']
-                week_labels = []
+        week_labels = []
         for i in range(12):
             month_index = i // 4
             week_index = i % 4
