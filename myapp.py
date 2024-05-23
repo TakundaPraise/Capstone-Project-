@@ -116,32 +116,28 @@ if uploaded_file is not None:
 
         # Rescale the forecasts
         rescale_vals = np.load('VISUELLE/normalization_scale.npy')
-        rescaled_forecasts = y_pred.detach().cpu().numpy().flatten()[:12] * rescale_vals
-
-        # Round the forecasts to whole numbers
-        rounded_forecasts = np.round(rescaled_forecasts).astype(int)
-        #week_labels = [f'Week {i+1}' for i in range(12)]
+        rescaled_forecasts = y_pred.detach().cpu().numpy().flatten()[i:i+12] * rescale_vals
+        all_forecasts.extend(np.round(rescaled_forecasts).astype(int))
 
         # Generate the month labels
         month_labels = ['January', 'February', 'March', 'April', 'May', 'June', 
-                    'July', 'August', 'September', 'October', 'November', 'December']
+                        'July', 'August', 'September', 'October', 'November', 'December']
         week_labels = []
-        for i in range(12):
+        for i in range(52):
             month_index = i // 4
             week_index = i % 4
             week_labels.append(f"{month_labels[month_index]} Week {week_index + 1}")
-    
-    
+
     # Get the list of unique months
     unique_months = sorted(set([label.split()[0] for label in week_labels]))
-    
+
     # Allow the user to select the months
     selected_months = st.multiselect("Select the months you want to see:", unique_months, default=unique_months)
-    
+
     # Filter the data based on the selected months
     selected_weeks = [label for label in week_labels if label.split()[0] in selected_months]
-    selected_forecasts = [rounded_forecasts[i] for i, label in enumerate(week_labels) if label in selected_weeks]
-    
+    selected_forecasts = [all_forecasts[i] for i, label in enumerate(week_labels) if label in selected_weeks]
+
     # Display the forecasts
     with st.expander("NEW PRODUCTS SALES PREDICTIONS LINE CHART"):
         fig, ax = plt.subplots(figsize=(12, 6))
@@ -151,7 +147,7 @@ if uploaded_file is not None:
         ax.set_xlabel('Week')
         ax.set_ylabel('Sales Predictions')
         st.pyplot(fig)
-    
+
     with st.expander("NEW PRODUCTS SALES PREDICTIONS TABLE"):
         selected_forecast_df = pd.DataFrame(selected_forecasts, columns=['SalesPredictions'], index=selected_weeks)
         st.table(selected_forecast_df)
