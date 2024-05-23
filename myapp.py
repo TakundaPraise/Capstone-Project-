@@ -85,7 +85,7 @@ st.image(welcome_image, caption="", width=400)
 
 # Add an overview of how the system works
 st.sidebar.subheader("System Overview")
-st.sidebar.write("This system utilizes a zero-shot sales predictions approach. It takes into account various inputs such as image features, category, color, fabric, temporal features, and Google Trends data to generate sales predictions for new fashion products to help fashion retailers when doing ordering .")
+st.sidebar.write("This system utilizes a zero-shot sales predictions and a GTM Transformer approach. It takes into account various inputs such as image features, category, color, fabric, temporal features, and Google Trends data to generate sales predictions for new fashion products to help fashion retailers when doing ordering .")
 
 # File upload
 uploaded_file = st.sidebar.file_uploader("Choose an image", type=["jpg", "jpeg", "png"])
@@ -121,23 +121,31 @@ if uploaded_file is not None:
         # Round the forecasts to whole numbers
         rounded_forecasts = np.round(rescaled_forecasts).astype(int)
         #week_labels = [f'Week {i+1}' for i in range(12)]
-    # Generate the month labels
+
+        # Generate the month labels
         month_labels = ['January', 'February', 'March', 'April', 'May', 'June', 
-                        'July', 'August', 'September', 'October', 'November', 'December']
-        
-        # Generate the week labels
-        week_labels = []
+                    'July', 'August', 'September', 'October', 'November', 'December']
+                week_labels = []
         for i in range(12):
             month_index = i // 4
             week_index = i % 4
             week_labels.append(f"{month_labels[month_index]} Week {week_index + 1}")
+    
+    
     # Display the forecasts
     st.subheader("NEW PRODUCTS SALES PREDICTIONS LINE CHART ")
     #st.line_chart(rescaled_forecasts)
     chart_expander = st.expander("Click to expand", expanded=False)
     with chart_expander:
         st.write('The line chart represents the sales predictions for new fashion products. he y-axis represents the sales predictions.The chart displays a line that indicates the predicted sales over time. The values on the y-axis represent the estimated number of sales for each corresponding time point on the x-axis. The line connects these data points, showing the trend or pattern in the sales predictions. The predictions are then rescaled using normalization values and presented in both the line chart and the table.')
-        week_labels = [f'Week {i+1}' for i in range(12)]
+        # Generate the week labels
+        month_labels = ['January', 'February', 'March', 'April', 'May', 'June', 
+                    'July', 'August', 'September', 'October', 'November', 'December']
+        week_labels = []
+        for i in range(12):
+            month_index = i // 4
+            week_index = i % 4
+            week_labels.append(f"{month_labels[month_index]} Week {week_index + 1}")
 
         # Create the line chart with updated labels
         fig, ax = plt.subplots(figsize=(12, 6))
