@@ -112,12 +112,13 @@ if uploaded_file is not None:
         temporal_features = torch.zeros(1, 4).to(device)
         gtrends = torch.zeros(1, 3, 52).to(device)
 
-        y_pred, _ = model(category, color, fabric, temporal_features, gtrends, image_feature)
-
-        # Rescale the forecasts
-        rescale_vals = np.load('VISUELLE/normalization_scale.npy')
-        rescaled_forecasts = y_pred.detach().cpu().numpy().flatten()[i:i+12] * rescale_vals
-        all_forecasts.extend(np.round(rescaled_forecasts).astype(int))
+        all_forecasts = []
+        for i in range(0, 52, 12):
+            temporal_features[:, 0] = i  # Week index
+            y_pred, _ = model(category, color, fabric, temporal_features, gtrends, image_feature)
+            rescale_vals = np.load('VISUELLE/normalization_scale.npy')
+            rescaled_forecasts = y_pred.detach().cpu().numpy().flatten()[i:i+12] * rescale_vals
+            all_forecasts.extend(np.round(rescaled_forecasts).astype(int))
 
         # Generate the month labels
         month_labels = ['January', 'February', 'March', 'April', 'May', 'June', 
