@@ -78,10 +78,10 @@ st.image(welcome_image, caption="", width=400)
 
 # Add an overview of how the system works
 st.sidebar.subheader("System Overview")
-st.sidebar.write("This system utilizes a zero-shot sales predictions approach. It takes into account various inputs such as image features, category, color, fabric, temporal features, and Google Trends data to generate sales predictions for new fashion products to help fashion retailers when doing ordering.")
+st.sidebar.write("This system utilizes a zero-shot sales predictions approach with the use of a GTM tramsformer. It takes into account various inputs such as image features, category, color, fabric, temporal features, and Google Trends data to generate sales predictions for new fashion products to help fashion retailers when doing ordering.")
 
 # File upload
-st.write('please upload an image of file type JPG, JPEG, or PNG')
+st.sidebar.write('please upload an image of file type JPG, JPEG, or PNG')
 uploaded_file = st.sidebar.file_uploader("Choose an image",  accept_multiple_files=False)
 
 if uploaded_file is not None:
@@ -89,12 +89,16 @@ if uploaded_file is not None:
     if uploaded_file.size > 209715200:  # 200 MB in bytes
         st.error("File size exceeds the limit of 200 MB.")
     elif uploaded_file.type not in ["image/jpeg", "image/jpg", "image/png"]:
-        st.error("Invalid file type. Please upload an image file (JPG, JPEG, or PNG).")
+        st.error("Invalid file type. Please upload an image of file type (JPG, JPEG, or PNG).")
     else:
         # Preprocess the uploaded image
         img = Image.open(uploaded_file).convert('RGB')
         img_transforms = Compose([Resize((40, 40)), ToTensor(), Normalize(mean=[0.012, 0.010, 0.008], std=[0.029, 0.024, 0.025])])
         image_feature = img_transforms(img).unsqueeze(0).to(device)
+
+        # Display the uploaded image
+        st.sidebar.subheader("Uploaded Image")
+        st.sidebar.image(uploaded_file, caption="Uploaded Image", width=100)
 
         # Generate forecasts
         with torch.no_grad():
