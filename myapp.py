@@ -97,29 +97,27 @@ if uploaded_file is not None:
     image_feature = img_transforms(img).unsqueeze(0).to(device)
 
     # Display the uploaded image
+    # Display the uploaded image
     st.sidebar.subheader("Uploaded Image")
     st.sidebar.image(uploaded_file, caption="Uploaded Image", width=100)
-
+    
     # Generate forecasts
     with torch.no_grad():
-        #category = torch.tensor([0], device=device)  # Placeholder category
-        #category = torch.LongTensor([cat_dict['shirt']]).to(device)
-        #color = torch.LongTensor([col_dict['blue']]).to(device
-        #fabric = torch.LongTensor([fab_dict['cotton']]).to(device)
         category = torch.tensor([0], device=device)  # Placeholder category
         color = torch.tensor([0], device=device)    # Placeholder color
         fabric = torch.tensor([0], device=device) # Placeholder textures
         temporal_features = torch.zeros(1, 4).to(device)
         gtrends = torch.zeros(1, 3, 52).to(device)
-
-        all_forecasts = []
-        for i in range(0, 52, 12):
-            temporal_features[:, 0] = i  # Week index
-            y_pred, _ = model(category, color, fabric, temporal_features, gtrends, image_feature)
-            rescale_vals = np.load('VISUELLE/normalization_scale.npy')
-            rescaled_forecasts = y_pred.detach().cpu().numpy().flatten()[i:i+12] * rescale_vals
-            all_forecasts.extend(np.round(rescaled_forecasts).astype(int))
-
+    
+        y_pred, _ = model(category, color, fabric, temporal_features, gtrends, image_feature)
+    
+        # Rescale the forecasts
+        rescale_vals = np.load('VISUELLE/normalization_scale.npy')
+        rescaled_forecasts = y_pred.detach().cpu().numpy().flatten()[:52] * rescale_vals
+    
+        # Round the forecasts to whole numbers
+        rounded_forecasts = np.round(rescaled_forecasts).astype(int)
+    
         # Generate the month labels
         month_labels = ['January', 'February', 'March', 'April', 'May', 'June', 
                         'July', 'August', 'September', 'October', 'November', 'December']
@@ -127,21 +125,18 @@ if uploaded_file is not None:
         for i in range(52):
             month_index = i // 4
             week_index = i % 4
-            if month_index < len(month_labels):
-                week_labels.append(f"{month_labels[month_index]} Week {week_index + 1}")
-            else:
-                week_labels.append(f"Week {i + 1}")
-
+            week_labels.append(f"{month_labels[month_index]} Week {week_index + 1}")
+    
     # Get the list of unique months
     unique_months = sorted(set([label.split()[0] for label in week_labels]))
-
+    
     # Allow the user to select the months
     selected_months = st.multiselect("Select the months you want to see:", unique_months, default=unique_months)
-
+    
     # Filter the data based on the selected months
     selected_weeks = [label for label in week_labels if label.split()[0] in selected_months]
-    selected_forecasts = [all_forecasts[i] for i, label in enumerate(week_labels) if label in selected_weeks]
-
+    selected_forecasts = [rounded_forecasts[i] for i, label in enumerate(week_labels) if label in selected_weeks]
+    
     # Display the forecasts
     with st.expander("NEW PRODUCTS SALES PREDICTIONS LINE CHART"):
         fig, ax = plt.subplots(figsize=(12, 6))
@@ -151,7 +146,14 @@ if uploaded_file is not None:
         ax.set_xlabel('Week')
         ax.set_ylabel('Sales Predictions')
         st.pyplot(fig)
-
+    
     with st.expander("NEW PRODUCTS SALES PREDICTIONS TABLE"):
-        selected_forecast_df = pd.DataFrame(selected_forecasts, columns=['SalesPredictions'], index=selected_weeks)
-        st.table(selected_forecast_df)
+        # Create a DataFrame with all 52 weeks and all months
+        all_weeks = [f"{month_labels[i//4]} Week {(i%4)+1}" for i in range(52)]
+        all_forecasts = rounded_forecasts
+        sales_predictions_df = pd.DataFrame({'Week': all_weeks, 'SalesPredictions': all_forecasts})
+    
+        # Filter the DataFrame based on the selected months
+        selected_df = sales_predictions_df[sales_predictions_df['Week'].isin(selected_weeks)]
+    
+        st.dataframe(selected_df)
