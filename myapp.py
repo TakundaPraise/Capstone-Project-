@@ -119,33 +119,28 @@ if uploaded_file is not None:
         rounded_forecasts = np.round(rescaled_forecasts).astype(int)
     
         # Generate the month labels
-        month_labels = ['January', 'February', 'March', 'April', 'May', 'June', 
+    month_labels = ['January', 'February', 'March', 'April', 'May', 'June', 
                     'July', 'August', 'September', 'October', 'November', 'December']
-        week_labels = []
-        for i in range(12):
-            month_index = i // 4
-            week_index = i % 4
-            week_labels.append(f"{month_labels[month_index]} Week {week_index + 1}")
+    
     # Get the list of unique months
-    unique_months = sorted(set([label.split()[0] for label in week_labels]))
+    unique_months = month_labels
     
     # Allow the user to select the months
     selected_months = st.multiselect("Select the months you want to see:", unique_months, default=unique_months)
     
     # Filter the data based on the selected months
-    selected_weeks = [label for label in week_labels if label.split()[0] in selected_months]
-    selected_forecasts = [rounded_forecasts[i] for i, label in enumerate(week_labels) if label in selected_weeks]
+    selected_forecasts = [rounded_forecasts[i] for i, label in enumerate(month_labels) if label in selected_months]
     
     # Display the forecasts
     with st.expander("NEW PRODUCTS SALES PREDICTIONS LINE CHART"):
         fig, ax = plt.subplots(figsize=(12, 6))
         ax.plot(selected_forecasts)
-        ax.set_xticks(range(len(selected_weeks)))
-        ax.set_xticklabels(selected_weeks, rotation=90)
-        ax.set_xlabel('Week')
+        ax.set_xticks(range(len(selected_months)))
+        ax.set_xticklabels(selected_months, rotation=90)
+        ax.set_xlabel('Month')
         ax.set_ylabel('Sales Predictions')
         st.pyplot(fig)
     
     with st.expander("NEW PRODUCTS SALES PREDICTIONS TABLE"):
-        selected_forecast_df = pd.DataFrame(selected_forecasts, columns=['SalesPredictions'], index=selected_weeks)
+        selected_forecast_df = pd.DataFrame(selected_forecasts, columns=['SalesPredictions'], index=selected_months)
         st.table(selected_forecast_df)
