@@ -127,7 +127,10 @@ if uploaded_file is not None:
         for i in range(52):
             month_index = i // 4
             week_index = i % 4
-            week_labels.append(f"{month_labels[month_index]} Week {week_index + 1}")
+            if month_index < len(month_labels):
+                week_labels.append(f"{month_labels[month_index]} Week {week_index + 1}")
+            else:
+                week_labels.append(f"Week {i + 1}")
 
     # Get the list of unique months
     unique_months = sorted(set([label.split()[0] for label in week_labels]))
