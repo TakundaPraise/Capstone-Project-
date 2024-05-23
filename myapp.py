@@ -116,8 +116,17 @@ if uploaded_file is not None:
 
         # Round the forecasts to whole numbers
         rounded_forecasts = np.round(rescaled_forecasts).astype(int)
-        week_labels = [f'Week {i+1}' for i in range(12)]
-
+        #week_labels = [f'Week {i+1}' for i in range(12)]
+    # Generate the month labels
+        month_labels = ['January', 'February', 'March', 'April', 'May', 'June', 
+                        'July', 'August', 'September', 'October', 'November', 'December']
+        
+        # Generate the week labels
+        week_labels = []
+        for i in range(12):
+            month_index = i // 4
+            week_index = i % 4
+            week_labels.append(f"{month_labels[month_index]} Week {week_index + 1}")
     # Display the forecasts
     st.subheader("NEW PRODUCTS SALES PREDICTIONS LINE CHART ")
     #st.line_chart(rescaled_forecasts)
