@@ -113,7 +113,7 @@ if uploaded_file is not None:
     
         # Rescale the forecasts
         rescale_vals = np.load('VISUELLE/normalization_scale.npy')
-        rescaled_forecasts = y_pred.detach().cpu().numpy().flatten()[:52] * rescale_vals
+        rescaled_forecasts = y_pred.detach().cpu().numpy().flatten()[:12] * rescale_vals
     
         # Round the forecasts to whole numbers
         rounded_forecasts = np.round(rescaled_forecasts).astype(int)
@@ -122,7 +122,7 @@ if uploaded_file is not None:
         month_labels = ['January', 'February', 'March', 'April', 'May', 'June', 
                         'July', 'August', 'September', 'October', 'November', 'December']
         week_labels = []
-        for i in range(52):
+        for i in range(12):
             month_index = i // 4
             week_index = i % 4
             week_labels.append(f"{month_labels[month_index]} Week {week_index + 1}")
@@ -148,12 +148,5 @@ if uploaded_file is not None:
         st.pyplot(fig)
     
     with st.expander("NEW PRODUCTS SALES PREDICTIONS TABLE"):
-        # Create a DataFrame with all 52 weeks and all months
-        all_weeks = [f"{month_labels[i//4]} Week {(i%4)+1}" for i in range(52)]
-        all_forecasts = rounded_forecasts
-        sales_predictions_df = pd.DataFrame({'Week': all_weeks, 'SalesPredictions': all_forecasts})
-    
-        # Filter the DataFrame based on the selected months
-        selected_df = sales_predictions_df[sales_predictions_df['Week'].isin(selected_weeks)]
-    
-        st.dataframe(selected_df)
+        selected_forecast_df = pd.DataFrame(selected_forecasts, columns=['SalesPredictions'], index=selected_weeks)
+        st.table(selected_forecast_df)
