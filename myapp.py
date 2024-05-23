@@ -120,13 +120,12 @@ if uploaded_file is not None:
     
         # Generate the month labels
         month_labels = ['January', 'February', 'March', 'April', 'May', 'June', 
-                        'July', 'August', 'September', 'October', 'November', 'December']
+                    'July', 'August', 'September', 'October', 'November', 'December']
         week_labels = []
         for i in range(12):
             month_index = i // 4
             week_index = i % 4
             week_labels.append(f"{month_labels[month_index]} Week {week_index + 1}")
-    
     # Get the list of unique months
     unique_months = sorted(set([label.split()[0] for label in week_labels]))
     
