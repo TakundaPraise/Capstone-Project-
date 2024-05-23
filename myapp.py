@@ -97,8 +97,8 @@ if uploaded_file is not None:
     image_feature = img_transforms(img).unsqueeze(0).to(device)
 
     # Display the uploaded image
-    st.subheader("Uploaded Image")
-    st.image(uploaded_file, caption="Uploaded Image", use_column_width=True)
+    st.sidebar.subheader("Uploaded Image")
+    st.sidebar.image(uploaded_file, caption="Uploaded Image", width=100)
 
     # Generate forecasts
     with torch.no_grad():
