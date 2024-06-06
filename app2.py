@@ -15,25 +15,7 @@ from models.FCN import FCN
 import matplotlib.pyplot as plt
 import base64
 
-# Function to load a pre-trained classifier for fashion images
-def load_fashion_classifier():
-    model = models.resnet18(pretrained=True)
-    num_ftrs = model.fc.in_features
-    model.fc = torch.nn.Linear(num_ftrs, 2)  # Assuming binary classification: fashion vs non-fashion
-    # Load your pre-trained weights for the classifier
-    model.load_state_dict(torch.load('path_to_fashion_classifier_weights.pth', map_location=torch.device('cpu')))
-    model.eval()
-    return model
-
-# Function to check if an image is a fashion clothing image
-def is_fashion_image(image, classifier, device):
-    transform = Compose([Resize((224, 224)), ToTensor(), Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
-    image_tensor = transform(image).unsqueeze(0).to(device)
-    with torch.no_grad():
-        output = classifier(image_tensor)
-        _, predicted = torch.max(output, 1)
-    return predicted.item() == 1  # Assuming label 1 corresponds to fashion images
-
+S
 # Set up Streamlit app
 st.set_page_config(page_title="Capstone Project")
 
@@ -90,8 +72,6 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 model.eval()
 
-# Load the fashion image classifier
-fashion_classifier = load_fashion_classifier()
 
 import streamlit as st
 from streamlit_lottie import st_lottie
