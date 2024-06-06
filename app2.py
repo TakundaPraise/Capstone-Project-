@@ -15,7 +15,7 @@ from models.FCN import FCN
 import matplotlib.pyplot as plt
 import base64
 
-S
+
 # Set up Streamlit app
 st.set_page_config(page_title="Capstone Project")
 
