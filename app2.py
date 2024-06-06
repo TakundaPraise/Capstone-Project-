@@ -93,73 +93,114 @@ model.eval()
 # Load the fashion image classifier
 fashion_classifier = load_fashion_classifier()
 
-# Streamlit UI
-st.title("PREDICTIVE ORDERING FOR NEW FASHION PRODUCTS")
+import streamlit as st
+from streamlit_lottie import st_lottie
+import requests
 
-welcome_image = "fashion3.jpeg"
-st.image(welcome_image, caption="", width=400)
+# Function to load Lottie animation
+def load_lottie(url):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
 
-# Add an overview of how the system works
-st.sidebar.subheader("System Overview")
-st.sidebar.write("This system utilizes a zero-shot sales predictions and a GTM Transformer approach. It takes into account various inputs such as image features, category, color, fabric, temporal features, and Google Trends data to generate sales predictions for new fashion products to help fashion retailers when doing ordering.")
+# Lottie animation URL
+lottie_url = "https://assets5.lottiefiles.com/packages/lf20_xtqkxqsa.json"
 
-# File upload
-uploaded_file = st.sidebar.file_uploader("Choose an image", type=["jpg", "jpeg", "png"])
+# Load Lottie animation
+lottie_json = load_lottie(lottie_url)
 
-if uploaded_file is not None:
-    # Preprocess the uploaded image
-    img = Image.open(uploaded_file).convert('RGB')
-    img_transforms = Compose([Resize((40, 40)), ToTensor(), Normalize(mean=[0.012, 0.010, 0.008], std=[0.029, 0.024, 0.025])])
-    image_feature = img_transforms(img).unsqueeze(0).to(device)
+# Set up authentication
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
 
-    # Display the uploaded image
-    # Display the uploaded image
-    st.sidebar.subheader("Uploaded Image")
-    st.sidebar.image(uploaded_file, caption="Uploaded Image", width=100)
+if not st.session_state.authenticated:
+    with st.form("login_form"):
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+        submit = st.form_submit_button("Login")
+
+        if submit:
+            if username == "your_username" and password == "your_password":
+                st.session_state.authenticated = True
+                st.success("Logged in successfully!")
+            else:
+                st.error("Invalid username or password.")
+else:
+    # Display the Lottie animation
+    st_lottie(lottie_json, height=300, key="lottie")
+
+    # Rest of your Streamlit application code
+    #st.title("PREDICTIVE ORDERING FOR NEW FASHION PRODUCTS")
+    # Your existing code...
+
+    # Streamlit UI
+    st.title("PREDICTIVE ORDERING FOR NEW FASHION PRODUCTS")
     
-    # Generate forecasts
-    with torch.no_grad():
-        category = torch.tensor([0], device=device)  # Placeholder category
-        color = torch.tensor([0], device=device)    # Placeholder color
-        fabric = torch.tensor([0], device=device) # Placeholder textures
-        temporal_features = torch.zeros(1, 4).to(device)
-        gtrends = torch.zeros(1, 3, 52).to(device)
+    welcome_image = "fashion3.jpeg"
+    st.image(welcome_image, caption="", width=400)
     
-        y_pred, _ = model(category, color, fabric, temporal_features, gtrends, image_feature)
+    # Add an overview of how the system works
+    st.sidebar.subheader("System Overview")
+    st.sidebar.write("This system utilizes a zero-shot sales predictions and a GTM Transformer approach. It takes into account various inputs such as image features, category, color, fabric, temporal features, and Google Trends data to generate sales predictions for new fashion products to help fashion retailers when doing ordering.")
     
-        # Rescale the forecasts
-        rescale_vals = np.load('VISUELLE/normalization_scale.npy')
-        rescaled_forecasts = y_pred.detach().cpu().numpy().flatten()[:12] * rescale_vals
+    # File upload
+    uploaded_file = st.sidebar.file_uploader("Choose an image", type=["jpg", "jpeg", "png"])
     
-        # Round the forecasts to whole numbers
-        rounded_forecasts = np.round(rescaled_forecasts).astype(int)
+    if uploaded_file is not None:
+        # Preprocess the uploaded image
+        img = Image.open(uploaded_file).convert('RGB')
+        img_transforms = Compose([Resize((40, 40)), ToTensor(), Normalize(mean=[0.012, 0.010, 0.008], std=[0.029, 0.024, 0.025])])
+        image_feature = img_transforms(img).unsqueeze(0).to(device)
     
-        # Generate the month labels
-    month_labels = ['January', 'February', 'March', 'April', 'May', 'June', 
-                    'July', 'August', 'September', 'October', 'November', 'December']
-    
-    # Get the list of unique months
-    unique_months = month_labels
-    
-    # Allow the user to select the months
-    selected_months = st.multiselect("Select the months you want to see:", unique_months, default=unique_months)
-    
-    # Filter the data based on the selected months
-    selected_forecasts = [rounded_forecasts[i] for i, label in enumerate(month_labels) if label in selected_months]
-    
-    # Display the forecasts
-    with st.expander("NEW PRODUCTS SALES PREDICTIONS LINE CHART"):
-        fig, ax = plt.subplots(figsize=(12, 6))
-        ax.plot(selected_forecasts)
-        ax.set_xticks(range(len(selected_months)))
-        ax.set_xticklabels(selected_months, rotation=90)
-        ax.set_xlabel('Month')
-        ax.set_ylabel('Sales Predictions')
-        st.pyplot(fig)
-    
-    with st.expander("NEW PRODUCTS SALES PREDICTIONS TABLE"):
-        selected_forecast_df = pd.DataFrame({
-            'Month': selected_months,
-            'SalesPredictions': selected_forecasts
-        })
-        st.table(selected_forecast_df)
+        # Display the uploaded image
+        # Display the uploaded image
+        st.sidebar.subheader("Uploaded Image")
+        st.sidebar.image(uploaded_file, caption="Uploaded Image", width=100)
+        
+        # Generate forecasts
+        with torch.no_grad():
+            category = torch.tensor([0], device=device)  # Placeholder category
+            color = torch.tensor([0], device=device)    # Placeholder color
+            fabric = torch.tensor([0], device=device) # Placeholder textures
+            temporal_features = torch.zeros(1, 4).to(device)
+            gtrends = torch.zeros(1, 3, 52).to(device)
+        
+            y_pred, _ = model(category, color, fabric, temporal_features, gtrends, image_feature)
+        
+            # Rescale the forecasts
+            rescale_vals = np.load('VISUELLE/normalization_scale.npy')
+            rescaled_forecasts = y_pred.detach().cpu().numpy().flatten()[:12] * rescale_vals
+        
+            # Round the forecasts to whole numbers
+            rounded_forecasts = np.round(rescaled_forecasts).astype(int)
+        
+            # Generate the month labels
+        month_labels = ['January', 'February', 'March', 'April', 'May', 'June', 
+                        'July', 'August', 'September', 'October', 'November', 'December']
+        
+        # Get the list of unique months
+        unique_months = month_labels
+        
+        # Allow the user to select the months
+        selected_months = st.multiselect("Select the months you want to see:", unique_months, default=unique_months)
+        
+        # Filter the data based on the selected months
+        selected_forecasts = [rounded_forecasts[i] for i, label in enumerate(month_labels) if label in selected_months]
+        
+        # Display the forecasts
+        with st.expander("NEW PRODUCTS SALES PREDICTIONS LINE CHART"):
+            fig, ax = plt.subplots(figsize=(12, 6))
+            ax.plot(selected_forecasts)
+            ax.set_xticks(range(len(selected_months)))
+            ax.set_xticklabels(selected_months, rotation=90)
+            ax.set_xlabel('Month')
+            ax.set_ylabel('Sales Predictions')
+            st.pyplot(fig)
+        
+        with st.expander("NEW PRODUCTS SALES PREDICTIONS TABLE"):
+            selected_forecast_df = pd.DataFrame({
+                'Month': selected_months,
+                'SalesPredictions': selected_forecasts
+            })
+            st.table(selected_forecast_df)
